@@ -33,7 +33,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_test() {
+    fn d1p1() {
         assert_eq!(part1(&[12]), 2);
         assert_eq!(part1(&[14]), 2);
         assert_eq!(part1(&[1969]), 654);
@@ -41,7 +41,7 @@ mod tests {
     }
 
     #[test]
-    fn part2_test() {
+    fn d1p2() {
         assert_eq!(part2(&[14]), 2);
         assert_eq!(part2(&[1969]), 966);
         assert_eq!(part2(&[100_756]), 50346);
