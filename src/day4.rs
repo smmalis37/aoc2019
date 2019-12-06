@@ -13,6 +13,7 @@ pub fn part2(range: RangeInclusive<u32>) -> usize {
     range.filter(|&x| is_valid(x, true)).count()
 }
 
+#[inline(always)]
 fn is_valid(val: u32, part2: bool) -> bool {
     let digits = to_digits(val);
     let mut seen_valid_pair = false;
@@ -37,18 +38,15 @@ fn is_valid(val: u32, part2: bool) -> bool {
     seen_valid_pair && no_descent
 }
 
-fn to_digits(mut val: u32) -> Vec<u32> {
-    let mut output = Vec::with_capacity(6);
+fn to_digits(mut val: u32) -> [u32; 6] {
+    let mut output = [0; 6];
 
-    loop {
-        output.push(val % 10);
+    for indexish in 0..6 {
+        output[5 - indexish] = val % 10;
         val /= 10;
-
-        if val == 0 {
-            output.reverse();
-            return output;
-        }
     }
+
+    output
 }
 
 #[cfg(test)]
