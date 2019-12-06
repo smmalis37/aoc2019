@@ -1,20 +1,19 @@
-// Can't use the generator macro due to the output not being passed into the solvers as mutable, which we want for part 1.
-fn parse(input: &str) -> Result<Vec<usize>, std::num::ParseIntError> {
-    input.split(',').map(|l| l.parse()).collect()
+use crate::intcode::*;
+
+#[aoc_generator(day2)]
+fn generator(input: &str) -> Result<Vec<usize>, std::num::ParseIntError> {
+    parse_intcode(input)
 }
 
 #[aoc(day2, part1)]
-fn part1(input: &str) -> usize {
-    let mut memory = parse(input).unwrap();
+fn part1(mut memory: Vec<usize>) -> usize {
     memory[1] = 12;
     memory[2] = 2;
     run_intcode(&mut memory)[0]
 }
 
 #[aoc(day2, part2)]
-fn part2(input: &str) -> usize {
-    let start_memory = parse(input).unwrap();
-
+fn part2(start_memory: Vec<usize>) -> usize {
     for verb in 0..=99 {
         for noun in 0..=99 {
             let mut memory = start_memory.clone();
@@ -28,26 +27,6 @@ fn part2(input: &str) -> usize {
     }
 
     unreachable!()
-}
-
-fn run_intcode(memory: &mut [usize]) -> &[usize] {
-    let mut index = 0;
-
-    loop {
-        match memory[index] {
-            1 => {
-                memory[memory[index + 3]] = memory[memory[index + 1]] + memory[memory[index + 2]];
-            }
-            2 => {
-                memory[memory[index + 3]] = memory[memory[index + 1]] * memory[memory[index + 2]];
-            }
-            99 => break,
-            _ => unreachable!(),
-        }
-        index += 4;
-    }
-
-    memory
 }
 
 #[cfg(test)]

@@ -68,8 +68,8 @@ fn generator(input: &str) -> [Vec<PathSegment>; 2] {
 }
 
 #[aoc(day3, part1)]
-fn part1(paths: &[Vec<PathSegment>; 2]) -> i32 {
-    let (touched_coords, _) = trace_wires(paths);
+fn part1(paths: [Vec<PathSegment>; 2]) -> i32 {
+    let (touched_coords, _) = trace_wires(&paths);
 
     touched_coords[0]
         .intersection(&touched_coords[1])
@@ -79,8 +79,8 @@ fn part1(paths: &[Vec<PathSegment>; 2]) -> i32 {
 }
 
 #[aoc(day3, part2)]
-fn part2(paths: &[Vec<PathSegment>; 2]) -> u32 {
-    let (touched_coords, touched_coords_steps) = trace_wires(paths);
+fn part2(paths: [Vec<PathSegment>; 2]) -> u32 {
+    let (touched_coords, touched_coords_steps) = trace_wires(&paths);
 
     touched_coords[0]
         .intersection(&touched_coords[1])
@@ -89,7 +89,6 @@ fn part2(paths: &[Vec<PathSegment>; 2]) -> u32 {
         .unwrap()
 }
 
-#[inline(always)]
 fn trace_wires(
     paths: &[Vec<PathSegment>; 2],
 ) -> ([HashSet<Coordinate>; 2], [HashMap<Coordinate, u32>; 2]) {
@@ -122,13 +121,13 @@ mod tests {
     #[test]
     fn d3p1() {
         assert_eq!(
-            part1(&generator(
+            part1(generator(
                 "R75,D30,R83,U83,L12,D49,R71,U7,L72\nU62,R66,U55,R34,D71,R55,D58,R83"
             )),
             159
         );
         assert_eq!(
-            part1(&generator(
+            part1(generator(
                 "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\nU98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
             )),
             135
@@ -138,13 +137,13 @@ mod tests {
     #[test]
     fn d3p2() {
         assert_eq!(
-            part2(&generator(
+            part2(generator(
                 "R75,D30,R83,U83,L12,D49,R71,U7,L72\nU62,R66,U55,R34,D71,R55,D58,R83"
             )),
             610
         );
         assert_eq!(
-            part2(&generator(
+            part2(generator(
                 "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\nU98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
             )),
             410

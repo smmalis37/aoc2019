@@ -5,5 +5,6 @@ mod day1;
 mod day2;
 mod day3;
 mod day4;
+mod intcode;
 
 aoc_lib! { year = 2019 }

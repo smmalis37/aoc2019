@@ -1,22 +1,21 @@
 use std::ops::RangeInclusive;
 
-// Not using the generator macro so we can consume the output.
+#[aoc_generator(day4)]
 fn generator(input: &str) -> RangeInclusive<u32> {
     let mut inputs = input.split('-').map(|x| x.parse().unwrap());
     RangeInclusive::new(inputs.next().unwrap(), inputs.next().unwrap())
 }
 
 #[aoc(day4, part1)]
-fn part1(input: &str) -> usize {
-    generator(input).filter(|&x| is_valid(x, false)).count()
+fn part1(range: RangeInclusive<u32>) -> usize {
+    range.filter(|&x| is_valid(x, false)).count()
 }
 
 #[aoc(day4, part2)]
-fn part2(input: &str) -> usize {
-    generator(input).filter(|&x| is_valid(x, true)).count()
+fn part2(range: RangeInclusive<u32>) -> usize {
+    range.filter(|&x| is_valid(x, true)).count()
 }
 
-#[inline(always)]
 fn is_valid(val: u32, part2: bool) -> bool {
     let digits = to_digits(val);
     let mut seen_valid_pair = false;
