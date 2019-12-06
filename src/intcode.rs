@@ -5,20 +5,29 @@ pub fn parse_intcode(input: &str) -> Vec<isize> {
     input.split(',').map(|l| l.parse().unwrap()).collect()
 }
 
-pub fn run_intcode(memory: &mut [isize]) -> &[isize] {
+pub fn run_intcode(memory: &mut [isize], input: impl IntoIterator<Item = isize>) -> Vec<isize> {
     let mut index = 0;
+    let mut outputs = vec![];
+    let mut input = input.into_iter();
 
     loop {
         let instr = Instruction::new(memory[index]);
         match instr.opcode {
             Add | Multiply => do_math(memory, &mut index, instr),
-            Input => unreachable!(),
-            Output => unreachable!(),
+            Input => {
+                assert!(instr.modes[0] == Position);
+                *get_mut_memory(memory, index + 1) = input.next().unwrap();
+                index += 2;
+            }
+            Output => {
+                outputs.push(get_parameter(memory, index + 1, instr.modes[0]));
+                index += 2;
+            }
             Terminate => break,
         }
     }
 
-    memory
+    outputs
 }
 
 fn do_math(memory: &mut [isize], index: &mut usize, instr: Instruction) {
