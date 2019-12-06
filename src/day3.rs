@@ -33,7 +33,7 @@ impl Direction {
 }
 
 #[derive(Copy, Clone)]
-struct PathSegment {
+pub struct PathSegment {
     distance: u32,
     direction: Direction,
 }
@@ -51,8 +51,7 @@ impl std::ops::AddAssign for Coordinate {
     }
 }
 
-#[aoc_generator(day3)]
-fn generator(input: &str) -> [Vec<PathSegment>; 2] {
+pub fn generator(input: &str) -> [Vec<PathSegment>; 2] {
     input
         .lines()
         .map(|l| {
@@ -67,8 +66,7 @@ fn generator(input: &str) -> [Vec<PathSegment>; 2] {
         .unwrap()
 }
 
-#[aoc(day3, part1)]
-fn part1(paths: [Vec<PathSegment>; 2]) -> i32 {
+pub fn part1(paths: [Vec<PathSegment>; 2]) -> i32 {
     let (touched_coords, _) = trace_wires(&paths);
 
     touched_coords[0]
@@ -78,8 +76,7 @@ fn part1(paths: [Vec<PathSegment>; 2]) -> i32 {
         .unwrap()
 }
 
-#[aoc(day3, part2)]
-fn part2(paths: [Vec<PathSegment>; 2]) -> u32 {
+pub fn part2(paths: [Vec<PathSegment>; 2]) -> u32 {
     let (touched_coords, touched_coords_steps) = trace_wires(&paths);
 
     touched_coords[0]

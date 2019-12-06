@@ -1,18 +1,15 @@
 use std::ops::RangeInclusive;
 
-#[aoc_generator(day4)]
-fn generator(input: &str) -> RangeInclusive<u32> {
+pub fn generator(input: &str) -> RangeInclusive<u32> {
     let mut inputs = input.split('-').map(|x| x.parse().unwrap());
     RangeInclusive::new(inputs.next().unwrap(), inputs.next().unwrap())
 }
 
-#[aoc(day4, part1)]
-fn part1(range: RangeInclusive<u32>) -> usize {
+pub fn part1(range: RangeInclusive<u32>) -> usize {
     range.filter(|&x| is_valid(x, false)).count()
 }
 
-#[aoc(day4, part2)]
-fn part2(range: RangeInclusive<u32>) -> usize {
+pub fn part2(range: RangeInclusive<u32>) -> usize {
     range.filter(|&x| is_valid(x, true)).count()
 }
 

@@ -5,6 +5,4 @@ authors = ["smmalis37@gmail.com"]
 edition = "2018"
 
 [dependencies]
-aoc-runner = { path = "..\\aoc-runner" }
-aoc-runner-derive = { path = "..\\aoc-runner-derive" }
 stackvec = "0.2.1"

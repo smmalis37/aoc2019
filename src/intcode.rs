@@ -1,5 +1,5 @@
-pub fn parse_intcode(input: &str) -> Result<Vec<usize>, std::num::ParseIntError> {
-    input.split(',').map(|l| l.parse()).collect()
+pub fn parse_intcode(input: &str) -> Vec<usize> {
+    input.split(',').map(|l| l.parse().unwrap()).collect()
 }
 
 pub fn run_intcode(memory: &mut [usize]) -> &[usize] {

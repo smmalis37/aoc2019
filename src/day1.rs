@@ -1,15 +1,12 @@
-#[aoc_generator(day1)]
-fn generator(input: &str) -> Result<Vec<u32>, std::num::ParseIntError> {
-    input.lines().map(|l| l.parse()).collect()
+pub fn generator(input: &str) -> Vec<u32> {
+    input.lines().map(|l| l.parse().unwrap()).collect()
 }
 
-#[aoc(day1, part1)]
-fn part1(masses: Vec<u32>) -> u32 {
+pub fn part1(masses: Vec<u32>) -> u32 {
     masses.iter().map(|x| calculate_fuel(*x)).sum()
 }
 
-#[aoc(day1, part2)]
-fn part2(masses: Vec<u32>) -> u32 {
+pub fn part2(masses: Vec<u32>) -> u32 {
     let mut total = 0;
 
     for mass in masses {

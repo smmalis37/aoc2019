@@ -1,19 +1,16 @@
 use crate::intcode::*;
 
-#[aoc_generator(day2)]
-fn generator(input: &str) -> Result<Vec<usize>, std::num::ParseIntError> {
+pub fn generator(input: &str) -> Vec<usize> {
     parse_intcode(input)
 }
 
-#[aoc(day2, part1)]
-fn part1(mut memory: Vec<usize>) -> usize {
+pub fn part1(mut memory: Vec<usize>) -> usize {
     memory[1] = 12;
     memory[2] = 2;
     run_intcode(&mut memory)[0]
 }
 
-#[aoc(day2, part2)]
-fn part2(start_memory: Vec<usize>) -> usize {
+pub fn part2(start_memory: Vec<usize>) -> usize {
     for verb in 0..=99 {
         for noun in 0..=99 {
             let mut memory = start_memory.clone();
