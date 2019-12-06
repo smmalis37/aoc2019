@@ -7,6 +7,7 @@ fn main() {
     run(2, day2::generator, day2::part1, day2::part2);
     run(3, day3::generator, day3::part1, day3::part2);
     run(4, day4::generator, day4::part1, day4::part2);
+    run(5, day5::generator, day5::part1, day5::part2);
 }
 
 fn run<T, O1: Display, O2: Display>(

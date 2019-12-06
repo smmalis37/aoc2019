@@ -1,16 +1,16 @@
 use crate::intcode::*;
 
-pub fn generator(input: &str) -> Vec<usize> {
+pub fn generator(input: &str) -> Vec<isize> {
     parse_intcode(input)
 }
 
-pub fn part1(mut memory: Vec<usize>) -> usize {
+pub fn part1(mut memory: Vec<isize>) -> isize {
     memory[1] = 12;
     memory[2] = 2;
     run_intcode(&mut memory)[0]
 }
 
-pub fn part2(start_memory: Vec<usize>) -> usize {
+pub fn part2(start_memory: Vec<isize>) -> isize {
     for verb in 0..=99 {
         for noun in 0..=99 {
             let mut memory = start_memory.clone();
