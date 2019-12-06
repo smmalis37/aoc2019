@@ -10,9 +10,9 @@ fn main() {
     run(5, day5::generator, day5::part1, day5::part2);
 }
 
-fn run<T, O1: Display, O2: Display>(
+fn run<T: Clone, O1: Display, O2: Display>(
     day_number: usize,
-    generator: impl Fn(&str) -> T + Copy,
+    generator: impl Fn(&str) -> T,
     part1: impl Fn(T) -> O1,
     part2: impl Fn(T) -> O2,
 ) {
@@ -23,29 +23,30 @@ fn run<T, O1: Display, O2: Display>(
         .read_to_string(&mut input)
         .unwrap();
     let trimmed_input = input.trim();
-    run_half(trimmed_input, day_number, 1, generator, part1);
-    run_half(trimmed_input, day_number, 2, generator, part2);
-}
 
-fn run_half<T, O: Display>(
-    input: &str,
-    day_number: usize,
-    part_number: usize,
-    generator: impl Fn(&str) -> T,
-    part: impl Fn(T) -> O,
-) {
     let start_time = Instant::now();
-    let generated = generator(input);
-    let inter_time = Instant::now();
-    let result = part(generated);
+    let generated = generator(trimmed_input);
     let final_time = Instant::now();
 
     println!(
-        "Day {} - Part {} : {}\n\tgenerator: {:?},\n\trunner: {:?}\n",
+        "\nDay {}:\n\tgenerator : {:?}",
         day_number,
+        (final_time - start_time)
+    );
+
+    run_half(generated.clone(), 1, part1);
+    run_half(generated, 2, part2);
+}
+
+fn run_half<T, O: Display>(input: T, part_number: usize, part: impl Fn(T) -> O) {
+    let start_time = Instant::now();
+    let result = part(input);
+    let final_time = Instant::now();
+
+    println!(
+        "Part {}: {}\n\trunner: {:?}",
         part_number,
         result,
-        (inter_time - start_time),
-        (final_time - inter_time)
+        (final_time - start_time)
     );
 }
