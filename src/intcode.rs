@@ -6,23 +6,24 @@ pub fn parse_intcode(input: &str) -> Vec<isize> {
 }
 
 pub fn run_intcode(memory: &mut [isize], input: impl IntoIterator<Item = isize>) -> Vec<isize> {
-    let mut index = 0;
+    let mut pc = 0;
     let mut outputs = vec![];
     let mut input = input.into_iter();
 
     loop {
-        let instr = Instruction::new(memory[index]);
+        let instr = Instruction::new(memory[pc]);
         match instr.opcode {
-            Add | Multiply => do_math(memory, &mut index, instr),
+            Add | Multiply | LessThan | Equals => do_math(memory, &mut pc, instr),
             Input => {
                 assert!(instr.modes[0] == Position);
-                *get_mut_memory(memory, index + 1) = input.next().unwrap();
-                index += 2;
+                *get_mut_memory(memory, pc + 1) = input.next().unwrap();
+                pc += 2;
             }
             Output => {
-                outputs.push(get_parameter(memory, index + 1, instr.modes[0]));
-                index += 2;
+                outputs.push(get_parameter(memory, pc + 1, instr.modes[0]));
+                pc += 2;
             }
+            JumpIfTrue | JumpIfFalse => do_jump(memory, &mut pc, instr),
             Terminate => break,
         }
     }
@@ -30,17 +31,33 @@ pub fn run_intcode(memory: &mut [isize], input: impl IntoIterator<Item = isize>)
     outputs
 }
 
-fn do_math(memory: &mut [isize], index: &mut usize, instr: Instruction) {
+fn do_math(memory: &mut [isize], pc: &mut usize, instr: Instruction) {
     assert!(instr.modes[2] == Position);
-    let value1 = get_parameter(memory, *index + 1, instr.modes[0]);
-    let value2 = get_parameter(memory, *index + 2, instr.modes[1]);
+    let value1 = get_parameter(memory, *pc + 1, instr.modes[0]);
+    let value2 = get_parameter(memory, *pc + 2, instr.modes[1]);
     let result = match instr.opcode {
         Add => value1 + value2,
         Multiply => value1 * value2,
+        LessThan => (value1 < value2).into(),
+        Equals => (value1 == value2).into(),
         _ => unreachable!(),
     };
-    *get_mut_memory(memory, *index + 3) = result;
-    *index += 4;
+    *get_mut_memory(memory, *pc + 3) = result;
+    *pc += 4;
+}
+
+fn do_jump(memory: &mut [isize], pc: &mut usize, instr: Instruction) {
+    let cond = get_parameter(memory, *pc + 1, instr.modes[0]);
+    let new_pc = get_parameter(memory, *pc + 2, instr.modes[1]);
+    if match instr.opcode {
+        JumpIfTrue => cond != 0,
+        JumpIfFalse => cond == 0,
+        _ => unreachable!(),
+    } {
+        *pc = new_pc as usize;
+    } else {
+        *pc += 3;
+    }
 }
 
 fn get_parameter(memory: &[isize], index: usize, mode: Mode) -> isize {
@@ -79,6 +96,10 @@ enum Opcode {
     Multiply,
     Input,
     Output,
+    JumpIfTrue,
+    JumpIfFalse,
+    LessThan,
+    Equals,
     Terminate,
 }
 
@@ -89,6 +110,10 @@ impl Opcode {
             2 => Multiply,
             3 => Input,
             4 => Output,
+            5 => JumpIfTrue,
+            6 => JumpIfFalse,
+            7 => LessThan,
+            8 => Equals,
             99 => Terminate,
             _ => unreachable!(),
         }
