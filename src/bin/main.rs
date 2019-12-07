@@ -11,6 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     run(3, day3::generator, day3::part1, day3::part2)?;
     run(4, day4::generator, day4::part1, day4::part2)?;
     run(5, day5::generator, day5::part1, day5::part2)?;
+    //run(6, day6::generator, day6::part1, day6::part2)?;
     Ok(())
 }
 
