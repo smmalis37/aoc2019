@@ -3,7 +3,7 @@ pub fn generator(input: &str) -> Vec<u32> {
 }
 
 pub fn part1(masses: Vec<u32>) -> u32 {
-    masses.iter().map(|x| calculate_fuel(*x)).sum()
+    masses.iter().map(|&x| calculate_fuel(x)).sum()
 }
 
 pub fn part2(masses: Vec<u32>) -> u32 {

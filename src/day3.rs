@@ -9,15 +9,16 @@ enum Direction {
     Right,
 }
 
-impl From<&str> for Direction {
-    fn from(letter: &str) -> Self {
-        match letter {
+impl std::str::FromStr for Direction {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
             "U" => Self::Up,
             "D" => Self::Down,
             "L" => Self::Left,
             "R" => Self::Right,
             _ => unreachable!(),
-        }
+        })
     }
 }
 
@@ -57,7 +58,7 @@ pub fn generator(input: &str) -> [Vec<PathSegment>; 2] {
         .map(|l| {
             l.split(',')
                 .map(|x| PathSegment {
-                    direction: x[..1].into(),
+                    direction: x[..1].parse().unwrap(),
                     distance: x[1..].parse().unwrap(),
                 })
                 .collect()

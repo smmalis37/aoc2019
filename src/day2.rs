@@ -1,4 +1,5 @@
 use crate::intcode::*;
+use std::iter::empty;
 
 pub fn generator(input: &str) -> Vec<isize> {
     parse_intcode(input)
@@ -7,7 +8,7 @@ pub fn generator(input: &str) -> Vec<isize> {
 pub fn part1(mut memory: Vec<isize>) -> isize {
     memory[1] = 12;
     memory[2] = 2;
-    run_intcode(&mut memory, std::iter::empty());
+    run_intcode(&mut memory, empty());
     memory[0]
 }
 
@@ -17,7 +18,7 @@ pub fn part2(start_memory: Vec<isize>) -> isize {
             let mut memory = start_memory.clone();
             memory[1] = noun;
             memory[2] = verb;
-            run_intcode(&mut memory, std::iter::empty());
+            run_intcode(&mut memory, empty());
             if memory[0] == 19_690_720 {
                 return 100 * noun + verb;
             }
@@ -34,7 +35,7 @@ mod tests {
     #[test]
     fn d2p1() {
         fn test(mut memory: Vec<isize>, expected_output: &[isize]) {
-            run_intcode(&mut memory, std::iter::empty());
+            run_intcode(&mut memory, empty());
             assert_eq!(memory, expected_output);
         }
 
