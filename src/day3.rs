@@ -34,13 +34,13 @@ impl Direction {
 }
 
 #[derive(Copy, Clone)]
-pub struct PathSegment {
+struct PathSegment {
     distance: u32,
     direction: Direction,
 }
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq)]
-struct Coordinate {
+pub struct Coordinate {
     x: i32,
     y: i32,
 }
@@ -52,64 +52,67 @@ impl std::ops::AddAssign for Coordinate {
     }
 }
 
-pub fn generator(input: &str) -> [Vec<PathSegment>; 2] {
-    input
-        .lines()
-        .map(|l| {
-            l.split(',')
-                .map(|x| PathSegment {
-                    direction: x[..1].parse().unwrap(),
-                    distance: x[1..].parse().unwrap(),
-                })
-                .collect()
-        })
-        .try_collect()
-        .unwrap()
+pub fn generator(input: &str) -> [HashMap<Coordinate, u32>; 2] {
+    trace_wires(
+        input
+            .lines()
+            .map(|l| {
+                l.split(',')
+                    .map(|x| PathSegment {
+                        direction: x[..1].parse().unwrap(),
+                        distance: x[1..].parse().unwrap(),
+                    })
+                    .collect()
+            })
+            .try_collect::<[Vec<_>; 2]>()
+            .unwrap(),
+    )
 }
 
-pub fn part1(paths: [Vec<PathSegment>; 2]) -> i32 {
-    let (touched_coords, _) = trace_wires(&paths);
-
-    touched_coords[0]
-        .intersection(&touched_coords[1])
+pub fn part1(paths: [HashMap<Coordinate, u32>; 2]) -> i32 {
+    hashmap_intersection(&paths[0], &paths[1])
         .map(|c| c.x.abs() + c.y.abs())
         .min()
         .unwrap()
 }
 
-pub fn part2(paths: [Vec<PathSegment>; 2]) -> u32 {
-    let (touched_coords, touched_coords_steps) = trace_wires(&paths);
-
-    touched_coords[0]
-        .intersection(&touched_coords[1])
-        .map(|c| touched_coords_steps[0][c] + touched_coords_steps[1][c])
+pub fn part2(paths: [HashMap<Coordinate, u32>; 2]) -> u32 {
+    hashmap_intersection(&paths[0], &paths[1])
+        .map(|c| paths[0][c] + paths[1][c])
         .min()
         .unwrap()
 }
 
-fn trace_wires(
-    paths: &[Vec<PathSegment>; 2],
-) -> ([HashSet<Coordinate>; 2], [HashMap<Coordinate, u32>; 2]) {
-    let mut touched_coords: [HashSet<Coordinate>; 2] = Default::default();
-    let mut touched_coords_steps: [HashMap<Coordinate, u32>; 2] = Default::default();
+fn trace_wires(paths: [Vec<PathSegment>; 2]) -> [HashMap<Coordinate, u32>; 2] {
+    let mut touched_coords_steps: [HashMap<Coordinate, u32>; 2] =
+        [make_hashmap(&paths[0]), make_hashmap(&paths[1])];
 
     for path_index in 0..2 {
         let mut position = Coordinate { x: 0, y: 0 };
         let mut steps = 0;
-        let coords = &mut touched_coords[path_index];
         let coords_steps = &mut touched_coords_steps[path_index];
         for segment in &paths[path_index] {
             let unit = segment.direction.to_unit();
             for _ in 0..segment.distance {
                 position += unit;
                 steps += 1;
-                coords.insert(position);
                 coords_steps.entry(position).or_insert(steps);
             }
         }
     }
 
-    (touched_coords, touched_coords_steps)
+    touched_coords_steps
+}
+
+fn make_hashmap(paths: &[PathSegment]) -> HashMap<Coordinate, u32> {
+    HashMap::with_capacity(paths.iter().map(|x| x.distance as usize).sum())
+}
+
+fn hashmap_intersection<'a, K: Eq + std::hash::Hash, V>(
+    h1: &'a HashMap<K, V>,
+    h2: &'a HashMap<K, V>,
+) -> impl Iterator<Item = &'a K> {
+    h1.keys().filter(move |x| h2.contains_key(x))
 }
 
 #[cfg(test)]
