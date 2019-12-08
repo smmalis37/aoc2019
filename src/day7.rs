@@ -1,5 +1,6 @@
 use crate::intcode::*;
 use crate::solver::Solver;
+use crossbeam::channel::unbounded;
 use permutohedron::Heap;
 
 pub struct Day7 {}
@@ -21,7 +22,8 @@ impl<'a> Solver<'a> for Day7 {
 
             for phase in settings.iter() {
                 let mut memory = start_memory.clone();
-                let output = run_intcode(&mut memory, [*phase, signal].iter().copied());
+                let output =
+                    run_intcode_single_threaded(&mut memory, [*phase, signal].iter().copied());
                 signal = output[0];
             }
 
@@ -31,8 +33,40 @@ impl<'a> Solver<'a> for Day7 {
         max_signal
     }
 
-    fn part2(data: Self::Generated) -> Self::Output {
-        0
+    fn part2(start_memory: Self::Generated) -> Self::Output {
+        let mut phases = [5, 6, 7, 8, 9];
+        let mut max_signal = 0;
+
+        for settings in Heap::new(&mut phases) {
+            let mut threads = Vec::new();
+            let channels = [
+                unbounded(),
+                unbounded(),
+                unbounded(),
+                unbounded(),
+                unbounded(),
+            ];
+
+            for (index, phase) in settings.iter().enumerate() {
+                let mut memory = start_memory.clone();
+                let (input_send, input_recv) = channels[index].clone();
+                input_send.send(*phase).unwrap();
+                let (output_send, _) = if index == 4 {
+                    channels[0].clone()
+                } else {
+                    channels[index + 1].clone()
+                };
+                threads.push(std::thread::spawn(move || {
+                    run_intcode_multi_threaded(&mut memory, input_recv, output_send)
+                }));
+            }
+            channels[0].0.send(0).unwrap();
+            threads.into_iter().for_each(|x| x.join().unwrap());
+            let signal = channels[0].1.recv().unwrap();
+            max_signal = std::cmp::max(max_signal, signal);
+        }
+
+        max_signal
     }
 }
 
@@ -63,5 +97,18 @@ mod tests {
     }
 
     #[test]
-    fn d7p2() {}
+    fn d7p2() {
+        assert_eq!(
+            Day7::part2(Day7::generator(
+                "3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5"
+            )),
+            139_629_729
+        );
+        assert_eq!(
+            Day7::part2(Day7::generator(
+                "3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10"
+            )),
+            18216
+        );
+    }
 }

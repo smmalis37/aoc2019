@@ -1,6 +1,5 @@
 use crate::intcode::*;
 use crate::solver::Solver;
-use std::iter::empty;
 
 pub struct Day2 {}
 
@@ -15,7 +14,7 @@ impl<'a> Solver<'a> for Day2 {
     fn part1(mut memory: Self::Generated) -> Self::Output {
         memory[1] = 12;
         memory[2] = 2;
-        run_intcode(&mut memory, empty());
+        run_intcode_no_io(&mut memory);
         memory[0]
     }
 
@@ -25,7 +24,7 @@ impl<'a> Solver<'a> for Day2 {
                 let mut memory = start_memory.clone();
                 memory[1] = noun;
                 memory[2] = verb;
-                run_intcode(&mut memory, empty());
+                run_intcode_no_io(&mut memory);
                 if memory[0] == 19_690_720 {
                     return 100 * noun + verb;
                 }
@@ -43,7 +42,7 @@ mod tests {
     #[test]
     fn d2p1() {
         fn test(mut memory: IntCode, expected_output: &IntCodeSlice) {
-            run_intcode(&mut memory, empty());
+            run_intcode_no_io(&mut memory);
             assert_eq!(memory, expected_output);
         }
 

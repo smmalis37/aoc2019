@@ -12,13 +12,13 @@ impl<'a> Solver<'a> for Day5 {
     }
 
     fn part1(mut memory: Self::Generated) -> Self::Output {
-        let outputs = run_intcode(&mut memory, vec![1]);
+        let outputs = run_intcode_single_threaded(&mut memory, vec![1]);
         assert!(outputs[..outputs.len() - 1].iter().all(|&x| x == 0));
         outputs[0]
     }
 
     fn part2(mut memory: Self::Generated) -> Self::Output {
-        let outputs = run_intcode(&mut memory, vec![5]);
+        let outputs = run_intcode_single_threaded(&mut memory, vec![5]);
         outputs[0]
     }
 }
@@ -27,7 +27,7 @@ impl<'a> Solver<'a> for Day5 {
 mod tests {
     use super::*;
     fn test(mut memory: IntCode, inputs: Vec<IntCodeCell>, expected_output: &IntCodeSlice) {
-        let outputs = run_intcode(&mut memory, inputs);
+        let outputs = run_intcode_single_threaded(&mut memory, inputs);
         assert_eq!(outputs, expected_output);
     }
 

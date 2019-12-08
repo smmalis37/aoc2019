@@ -1,3 +1,4 @@
+use crossbeam::channel::*;
 use Mode::*;
 use Opcode::*;
 
@@ -9,13 +10,27 @@ pub(crate) fn parse_intcode(input: &str) -> IntCode {
     input.split(',').map(|l| l.parse().unwrap()).collect()
 }
 
-pub(crate) fn run_intcode(
+pub(crate) fn run_intcode_no_io(memory: &mut IntCodeSlice) {
+    run_intcode_single_threaded(memory, std::iter::empty());
+}
+
+pub(crate) fn run_intcode_single_threaded(
     memory: &mut IntCodeSlice,
     input: impl IntoIterator<Item = IntCodeCell>,
 ) -> Vec<IntCodeCell> {
+    let (input_send, input_recv) = unbounded();
+    input.into_iter().for_each(|x| input_send.send(x).unwrap());
+    let (output_send, output_recv) = unbounded();
+    run_intcode_multi_threaded(memory, input_recv, output_send);
+    output_recv.into_iter().collect()
+}
+
+pub(crate) fn run_intcode_multi_threaded(
+    memory: &mut IntCodeSlice,
+    input: Receiver<isize>,
+    output: Sender<isize>,
+) {
     let mut pc = 0;
-    let mut outputs = vec![];
-    let mut input = input.into_iter();
 
     loop {
         let instr = Instruction::new(memory[pc]);
@@ -23,19 +38,19 @@ pub(crate) fn run_intcode(
             Add | Multiply | LessThan | Equals => do_math(memory, &mut pc, instr),
             Input => {
                 assert!(instr.modes[0] == Position);
-                *get_mut_memory(memory, pc + 1) = input.next().unwrap();
+                *get_mut_memory(memory, pc + 1) = input.recv().unwrap();
                 pc += 2;
             }
             Output => {
-                outputs.push(get_parameter(memory, pc + 1, instr.modes[0]));
+                output
+                    .send(get_parameter(memory, pc + 1, instr.modes[0]))
+                    .unwrap();
                 pc += 2;
             }
             JumpIfTrue | JumpIfFalse => do_jump(memory, &mut pc, instr),
             Terminate => break,
         }
     }
-
-    outputs
 }
 
 fn do_math(memory: &mut IntCodeSlice, pc: &mut usize, instr: Instruction) {
