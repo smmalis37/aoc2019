@@ -26,7 +26,7 @@ impl<'a> Solver<'a> for Day5 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn test(mut memory: IntCode, inputs: Vec<IntCodeCell>, expected_output: &[IntCodeCell]) {
+    fn test(mut memory: IntCode, inputs: Vec<IntCodeCell>, expected_output: &IntCodeSlice) {
         let outputs = run_intcode(&mut memory, inputs);
         assert_eq!(outputs, expected_output);
     }

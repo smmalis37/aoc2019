@@ -1,19 +1,18 @@
-#![allow(clippy::ptr_arg)]
-
 use Mode::*;
 use Opcode::*;
 
 pub(crate) type IntCodeCell = isize;
 pub(crate) type IntCode = Vec<IntCodeCell>;
+pub(crate) type IntCodeSlice = [IntCodeCell];
 
 pub(crate) fn parse_intcode(input: &str) -> IntCode {
     input.split(',').map(|l| l.parse().unwrap()).collect()
 }
 
 pub(crate) fn run_intcode(
-    memory: &mut IntCode,
+    memory: &mut IntCodeSlice,
     input: impl IntoIterator<Item = IntCodeCell>,
-) -> IntCode {
+) -> Vec<IntCodeCell> {
     let mut pc = 0;
     let mut outputs = vec![];
     let mut input = input.into_iter();
@@ -39,7 +38,7 @@ pub(crate) fn run_intcode(
     outputs
 }
 
-fn do_math(memory: &mut IntCode, pc: &mut usize, instr: Instruction) {
+fn do_math(memory: &mut IntCodeSlice, pc: &mut usize, instr: Instruction) {
     assert!(instr.modes[2] == Position);
     let value1 = get_parameter(memory, *pc + 1, instr.modes[0]);
     let value2 = get_parameter(memory, *pc + 2, instr.modes[1]);
@@ -54,7 +53,7 @@ fn do_math(memory: &mut IntCode, pc: &mut usize, instr: Instruction) {
     *pc += 4;
 }
 
-fn do_jump(memory: &mut IntCode, pc: &mut usize, instr: Instruction) {
+fn do_jump(memory: &mut IntCodeSlice, pc: &mut usize, instr: Instruction) {
     let cond = get_parameter(memory, *pc + 1, instr.modes[0]);
     let new_pc = get_parameter(memory, *pc + 2, instr.modes[1]);
     if match instr.opcode {
@@ -68,16 +67,15 @@ fn do_jump(memory: &mut IntCode, pc: &mut usize, instr: Instruction) {
     }
 }
 
-fn get_parameter(memory: &IntCode, index: usize, mode: Mode) -> IntCodeCell {
+fn get_parameter(memory: &IntCodeSlice, index: usize, mode: Mode) -> IntCodeCell {
     match mode {
         Mode::Position => memory[memory[index] as usize],
         Mode::Immediate => memory[index],
     }
 }
 
-fn get_mut_memory(memory: &mut IntCode, index: usize) -> &mut IntCodeCell {
-    let value = memory[index] as usize;
-    &mut memory[value]
+fn get_mut_memory(memory: &mut IntCodeSlice, index: usize) -> &mut IntCodeCell {
+    &mut memory[memory[index] as usize]
 }
 
 #[derive(Copy, Clone)]

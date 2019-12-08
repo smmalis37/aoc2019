@@ -42,7 +42,7 @@ mod tests {
 
     #[test]
     fn d2p1() {
-        fn test(mut memory: Vec<isize>, expected_output: &[isize]) {
+        fn test(mut memory: IntCode, expected_output: &IntCodeSlice) {
             run_intcode(&mut memory, empty());
             assert_eq!(memory, expected_output);
         }
