@@ -1,5 +1,5 @@
 use crate::solver::Solver;
-use stackvec::prelude::*;
+use arrayvec::ArrayVec;
 use std::collections::*;
 
 #[derive(Copy, Clone)]
@@ -73,8 +73,7 @@ impl<'a> Solver<'a> for Day3 {
                         })
                         .collect()
                 })
-                .try_collect::<[Vec<_>; 2]>()
-                .unwrap(),
+                .collect::<ArrayVec<[Vec<_>; 2]>>(),
         )
     }
 
@@ -93,7 +92,7 @@ impl<'a> Solver<'a> for Day3 {
     }
 }
 
-fn trace_wires(paths: [Vec<PathSegment>; 2]) -> [HashMap<Coordinate, Distance>; 2] {
+fn trace_wires(paths: ArrayVec<[Vec<PathSegment>; 2]>) -> [HashMap<Coordinate, Distance>; 2] {
     let mut touched_coords_steps: [HashMap<Coordinate, Distance>; 2] =
         [make_hashmap(&paths[0]), make_hashmap(&paths[1])];
 
