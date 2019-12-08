@@ -1,14 +1,13 @@
 use aoc2019::*;
 use std::error::Error;
 use std::fmt::Display;
-use std::io::prelude::*;
 use std::time::Instant;
 
 macro_rules! days {
     ( $( $d:expr ),* ) => {
         $(
             paste::expr! {
-                run::<[<day $d>]::[<Day $d>]>($d)?;
+                run::<[<day $d>]::[<Day $d>]>($d, include_str!(concat!("..\\..\\input\\2019\\day", $d, ".txt")))?;
             }
         )*
     };
@@ -20,10 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run<S: for<'a> solver::Solver<'a>>(day_number: usize) -> Result<(), Box<dyn Error>> {
-    let mut input = String::new();
-
-    std::fs::File::open(format!("input/2019/day{}.txt", day_number))?.read_to_string(&mut input)?;
+fn run<'a, S: solver::Solver<'a>>(day_number: usize, input: &'a str) -> Result<(), Box<dyn Error>> {
     let trimmed_input = input.trim();
 
     let start_time = Instant::now();
