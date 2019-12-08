@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 stackvec = "0.2.1"
 petgraph = "0.4.13"
+paste = "0.1.6"

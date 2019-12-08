@@ -4,14 +4,19 @@ use std::fmt::Display;
 use std::io::prelude::*;
 use std::time::Instant;
 
+macro_rules! days {
+    ( $( $d:expr ),* ) => {
+        $(
+            paste::expr! {
+                run::<[<day $d>]::[<Day $d>]>($d)?;
+            }
+        )*
+    };
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     println!("AOC 2019");
-    run::<day1::Day1>(1)?;
-    run::<day2::Day2>(2)?;
-    run::<day3::Day3>(3)?;
-    run::<day4::Day4>(4)?;
-    run::<day5::Day5>(5)?;
-    run::<day6::Day6>(6)?;
+    days!(1, 2, 3, 4, 5, 6);
     Ok(())
 }
 
