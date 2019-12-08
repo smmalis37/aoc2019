@@ -7,7 +7,7 @@ macro_rules! days {
     ( $( $d:expr ),* ) => {
         $(
             paste::expr! {
-                run::<[<day $d>]::[<Day $d>]>($d, include_str!(concat!("..\\..\\input\\2019\\day", $d, ".txt")))?;
+                run::<[<day $d>]::[<Day $d>]>($d, include_str!(concat!("..\\..\\input\\2019\\day", $d, ".txt")));
             }
         )*
     };
@@ -19,7 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run<'a, S: solver::Solver<'a>>(day_number: usize, input: &'a str) -> Result<(), Box<dyn Error>> {
+fn run<'a, S: solver::Solver<'a>>(day_number: u8, input: &'a str) {
     let trimmed_input = input.trim();
 
     let start_time = Instant::now();
@@ -34,10 +34,9 @@ fn run<'a, S: solver::Solver<'a>>(day_number: usize, input: &'a str) -> Result<(
 
     run_half(generated.clone(), 1, S::part1);
     run_half(generated, 2, S::part2);
-    Ok(())
 }
 
-fn run_half<T, O: Display>(input: T, part_number: usize, part: impl Fn(T) -> O) {
+fn run_half<T, O: Display>(input: T, part_number: u8, part: impl Fn(T) -> O) {
     let start_time = Instant::now();
     let result = part(input);
     let final_time = Instant::now();

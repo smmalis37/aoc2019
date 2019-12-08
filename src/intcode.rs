@@ -2,7 +2,7 @@ use crossbeam::channel::*;
 use Mode::*;
 use Opcode::*;
 
-pub(crate) type IntCodeCell = isize;
+pub(crate) type IntCodeCell = i32;
 pub(crate) type IntCode = Vec<IntCodeCell>;
 pub(crate) type IntCodeSlice = [IntCodeCell];
 
@@ -27,8 +27,8 @@ pub(crate) fn run_intcode_single_threaded(
 
 pub(crate) fn run_intcode_multi_threaded(
     memory: &mut IntCodeSlice,
-    input: Receiver<isize>,
-    output: Sender<isize>,
+    input: Receiver<IntCodeCell>,
+    output: Sender<IntCodeCell>,
 ) {
     let mut pc = 0;
 
@@ -70,13 +70,13 @@ fn do_math(memory: &mut IntCodeSlice, pc: &mut usize, instr: Instruction) {
 
 fn do_jump(memory: &mut IntCodeSlice, pc: &mut usize, instr: Instruction) {
     let cond = get_parameter(memory, *pc + 1, instr.modes[0]);
-    let new_pc = get_parameter(memory, *pc + 2, instr.modes[1]);
+    let new_pc = get_parameter(memory, *pc + 2, instr.modes[1]) as usize;
     if match instr.opcode {
         JumpIfTrue => cond != 0,
         JumpIfFalse => cond == 0,
         _ => unreachable!(),
     } {
-        *pc = new_pc as usize;
+        *pc = new_pc;
     } else {
         *pc += 3;
     }

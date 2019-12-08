@@ -7,7 +7,7 @@ pub struct Day7 {}
 
 impl<'a> Solver<'a> for Day7 {
     type Generated = IntCode;
-    type Output = isize;
+    type Output = IntCodeCell;
 
     fn generator(input: &'a str) -> Self::Generated {
         parse_intcode(input)
