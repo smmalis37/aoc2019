@@ -1,6 +1,6 @@
 use crate::intcode::*;
 use crate::solver::Solver;
-use crossbeam::channel::unbounded;
+use crossbeam::channel::*;
 use permutohedron::Heap;
 
 pub struct Day7 {}
@@ -36,19 +36,26 @@ impl<'a> Solver<'a> for Day7 {
     fn part2(start_memory: Self::Generated) -> Self::Output {
         let mut phases = [5, 6, 7, 8, 9];
         let mut max_signal = 0;
+        let channels = [
+            unbounded(),
+            unbounded(),
+            unbounded(),
+            unbounded(),
+            unbounded(),
+        ];
+        let threads = rayon::ThreadPoolBuilder::new()
+            .num_threads(5)
+            .build()
+            .unwrap();
 
         for settings in Heap::new(&mut phases) {
-            let mut threads = Vec::new();
-            let channels = [
-                unbounded(),
-                unbounded(),
-                unbounded(),
-                unbounded(),
-                unbounded(),
-            ];
+            assert!(channels.iter().all(|x| x.0.is_empty() && x.1.is_empty()));
+            let wg = crossbeam::sync::WaitGroup::new();
 
             for (index, phase) in settings.iter().enumerate() {
                 let mut memory = start_memory.clone();
+                let wg = wg.clone();
+
                 let (input_send, input_recv) = channels[index].clone();
                 input_send.send(*phase).unwrap();
                 let (output_send, _) = if index == 4 {
@@ -56,12 +63,15 @@ impl<'a> Solver<'a> for Day7 {
                 } else {
                     channels[index + 1].clone()
                 };
-                threads.push(std::thread::spawn(move || {
-                    run_intcode_multi_threaded(&mut memory, input_recv, output_send)
-                }));
+
+                threads.spawn(move || {
+                    run_intcode_multi_threaded(&mut memory, input_recv, output_send);
+                    wg.wait();
+                });
             }
+
             channels[0].0.send(0).unwrap();
-            threads.into_iter().for_each(|x| x.join().unwrap());
+            wg.wait();
             let signal = channels[0].1.recv().unwrap();
             max_signal = std::cmp::max(max_signal, signal);
         }
