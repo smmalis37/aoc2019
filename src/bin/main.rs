@@ -16,7 +16,7 @@ macro_rules! days {
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("AOC 2019");
-    days!(1, 2, 3, 4, 5, 6);
+    days!(1, 2, 3, 4, 5, 6, 7);
     Ok(())
 }
 
