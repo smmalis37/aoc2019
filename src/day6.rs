@@ -1,29 +1,38 @@
+use crate::solver::Solver;
 use petgraph::prelude::*;
 use petgraph::Undirected;
 
-pub fn generator(input: &str) -> GraphMap<&str, u32, Undirected> {
-    let mut graph = GraphMap::new();
+pub struct Day6 {}
 
-    for l in input.lines() {
-        let mut parts = l.split(')');
-        let parent = parts.next().unwrap();
-        let child = parts.next().unwrap();
-        graph.add_edge(parent, child, 1);
+impl<'a> Solver<'a> for Day6 {
+    type Generated = GraphMap<&'a str, u32, Undirected>;
+    type Output = u32;
+
+    fn generator(input: &'a str) -> Self::Generated {
+        let mut graph = GraphMap::new();
+
+        for l in input.lines() {
+            let mut parts = l.split(')');
+            let parent = parts.next().unwrap();
+            let child = parts.next().unwrap();
+            graph.add_edge(parent, child, 1);
+        }
+
+        graph
     }
 
-    graph
-}
+    fn part1(graph: Self::Generated) -> Self::Output {
+        let root = "COM";
+        petgraph::algo::dijkstra(&graph, root, None, |e| *e.weight())
+            .values()
+            .sum()
+    }
 
-pub fn part1(graph: GraphMap<&str, u32, Undirected>) -> u32 {
-    let root = "COM";
-    petgraph::algo::dijkstra(&graph, root, None, |e| *e.weight())
-        .values()
-        .sum()
-}
-
-pub fn part2(graph: GraphMap<&str, u32, Undirected>) -> u32 {
-    let destination = "SAN";
-    petgraph::algo::dijkstra(&graph, "YOU", Some(destination), |e| *e.weight())[&destination] - 2
+    fn part2(graph: Self::Generated) -> Self::Output {
+        let destination = "SAN";
+        petgraph::algo::dijkstra(&graph, "YOU", Some(destination), |e| *e.weight())[&destination]
+            - 2
+    }
 }
 
 #[cfg(test)]
@@ -33,18 +42,8 @@ mod tests {
     #[test]
     fn d6p1() {
         assert_eq!(
-            part1(generator(
-                "COM)B
-B)C
-C)D
-D)E
-E)F
-B)G
-G)H
-D)I
-E)J
-J)K
-K)L"
+            Day6::part1(Day6::generator(
+                "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L"
             )),
             42
         );
@@ -53,20 +52,8 @@ K)L"
     #[test]
     fn d6p2() {
         assert_eq!(
-            part2(generator(
-                "COM)B
-B)C
-C)D
-D)E
-E)F
-B)G
-G)H
-D)I
-E)J
-J)K
-K)L
-K)YOU
-I)SAN"
+            Day6::part2(Day6::generator(
+                "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L\nK)YOU\nI)SAN"
             )),
             4
         );

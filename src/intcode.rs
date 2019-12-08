@@ -1,11 +1,19 @@
+#![allow(clippy::ptr_arg)]
+
 use Mode::*;
 use Opcode::*;
 
-pub fn parse_intcode(input: &str) -> Vec<isize> {
+pub(crate) type IntCodeCell = isize;
+pub(crate) type IntCode = Vec<IntCodeCell>;
+
+pub(crate) fn parse_intcode(input: &str) -> IntCode {
     input.split(',').map(|l| l.parse().unwrap()).collect()
 }
 
-pub fn run_intcode(memory: &mut [isize], input: impl IntoIterator<Item = isize>) -> Vec<isize> {
+pub(crate) fn run_intcode(
+    memory: &mut IntCode,
+    input: impl IntoIterator<Item = IntCodeCell>,
+) -> IntCode {
     let mut pc = 0;
     let mut outputs = vec![];
     let mut input = input.into_iter();
@@ -31,7 +39,7 @@ pub fn run_intcode(memory: &mut [isize], input: impl IntoIterator<Item = isize>)
     outputs
 }
 
-fn do_math(memory: &mut [isize], pc: &mut usize, instr: Instruction) {
+fn do_math(memory: &mut IntCode, pc: &mut usize, instr: Instruction) {
     assert!(instr.modes[2] == Position);
     let value1 = get_parameter(memory, *pc + 1, instr.modes[0]);
     let value2 = get_parameter(memory, *pc + 2, instr.modes[1]);
@@ -46,7 +54,7 @@ fn do_math(memory: &mut [isize], pc: &mut usize, instr: Instruction) {
     *pc += 4;
 }
 
-fn do_jump(memory: &mut [isize], pc: &mut usize, instr: Instruction) {
+fn do_jump(memory: &mut IntCode, pc: &mut usize, instr: Instruction) {
     let cond = get_parameter(memory, *pc + 1, instr.modes[0]);
     let new_pc = get_parameter(memory, *pc + 2, instr.modes[1]);
     if match instr.opcode {
@@ -60,15 +68,16 @@ fn do_jump(memory: &mut [isize], pc: &mut usize, instr: Instruction) {
     }
 }
 
-fn get_parameter(memory: &[isize], index: usize, mode: Mode) -> isize {
+fn get_parameter(memory: &IntCode, index: usize, mode: Mode) -> IntCodeCell {
     match mode {
         Mode::Position => memory[memory[index] as usize],
         Mode::Immediate => memory[index],
     }
 }
 
-fn get_mut_memory(memory: &mut [isize], index: usize) -> &mut isize {
-    &mut memory[memory[index] as usize]
+fn get_mut_memory(memory: &mut IntCode, index: usize) -> &mut IntCodeCell {
+    let value = memory[index] as usize;
+    &mut memory[value]
 }
 
 #[derive(Copy, Clone)]
@@ -78,7 +87,7 @@ struct Instruction {
 }
 
 impl Instruction {
-    fn new(val: isize) -> Self {
+    fn new(val: IntCodeCell) -> Self {
         Self {
             opcode: Opcode::new(val % 100),
             modes: [
@@ -104,7 +113,7 @@ enum Opcode {
 }
 
 impl Opcode {
-    fn new(val: isize) -> Self {
+    fn new(val: IntCodeCell) -> Self {
         match val {
             1 => Add,
             2 => Multiply,
@@ -127,7 +136,7 @@ enum Mode {
 }
 
 impl Mode {
-    fn new(val: isize) -> Self {
+    fn new(val: IntCodeCell) -> Self {
         match val {
             0 => Position,
             1 => Immediate,

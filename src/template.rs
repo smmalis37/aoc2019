@@ -1,13 +1,22 @@
-pub fn generator(input: &str) -> usize {
-    0
-}
+use crate::solver::Solver;
 
-pub fn part1(data: usize) -> usize {
-    0
-}
+pub struct DayNUM {}
 
-pub fn part2(data: usize) -> usize {
-    0
+impl<'a> Solver<'a> for DayNUM {
+    type Generated = u32;
+    type Output = u32;
+
+    fn generator(input: &'a str) -> Self::Generated {
+        0
+    }
+
+    fn part1(data: Self::Generated) -> Self::Output {
+        0
+    }
+
+    fn part2(data: Self::Generated) -> Self::Output {
+        0
+    }
 }
 
 #[cfg(test)]

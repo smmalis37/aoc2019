@@ -1,27 +1,38 @@
-pub fn generator(input: &str) -> Vec<u32> {
-    input.lines().map(|l| l.parse().unwrap()).collect()
-}
+use crate::solver::Solver;
 
-pub fn part1(masses: Vec<u32>) -> u32 {
-    masses.iter().map(|&x| calculate_fuel(x)).sum()
-}
+pub struct Day1 {}
 
-pub fn part2(masses: Vec<u32>) -> u32 {
-    let mut total = 0;
+type Mass = u32;
 
-    for mass in masses {
-        let mut fuel = calculate_fuel(mass);
+impl<'a> Solver<'a> for Day1 {
+    type Generated = Vec<Mass>;
+    type Output = Mass;
 
-        while fuel > 0 {
-            total += fuel;
-            fuel = calculate_fuel(fuel);
-        }
+    fn generator(input: &'a str) -> Self::Generated {
+        input.lines().map(|l| l.parse().unwrap()).collect()
     }
 
-    total
+    fn part1(masses: Self::Generated) -> Self::Output {
+        masses.iter().map(|&x| calculate_fuel(x)).sum()
+    }
+
+    fn part2(masses: Self::Generated) -> Self::Output {
+        let mut total = 0;
+
+        for mass in masses {
+            let mut fuel = calculate_fuel(mass);
+
+            while fuel > 0 {
+                total += fuel;
+                fuel = calculate_fuel(fuel);
+            }
+        }
+
+        total
+    }
 }
 
-fn calculate_fuel(mass: u32) -> u32 {
+fn calculate_fuel(mass: Mass) -> Mass {
     (mass / 3).saturating_sub(2)
 }
 
@@ -31,16 +42,16 @@ mod tests {
 
     #[test]
     fn d1p1() {
-        assert_eq!(part1(vec![12]), 2);
-        assert_eq!(part1(vec![14]), 2);
-        assert_eq!(part1(vec![1969]), 654);
-        assert_eq!(part1(vec![100_756]), 33583);
+        assert_eq!(Day1::part1(vec![12]), 2);
+        assert_eq!(Day1::part1(vec![14]), 2);
+        assert_eq!(Day1::part1(vec![1969]), 654);
+        assert_eq!(Day1::part1(vec![100_756]), 33583);
     }
 
     #[test]
     fn d1p2() {
-        assert_eq!(part2(vec![14]), 2);
-        assert_eq!(part2(vec![1969]), 966);
-        assert_eq!(part2(vec![100_756]), 50346);
+        assert_eq!(Day1::part2(vec![14]), 2);
+        assert_eq!(Day1::part2(vec![1969]), 966);
+        assert_eq!(Day1::part2(vec![100_756]), 50346);
     }
 }

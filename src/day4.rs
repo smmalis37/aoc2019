@@ -1,20 +1,30 @@
+use crate::solver::Solver;
 use std::ops::RangeInclusive;
 
-pub fn generator(input: &str) -> RangeInclusive<u32> {
-    let mut inputs = input.split('-').map(|x| x.parse().unwrap());
-    RangeInclusive::new(inputs.next().unwrap(), inputs.next().unwrap())
-}
+pub struct Day4 {}
 
-pub fn part1(range: RangeInclusive<u32>) -> usize {
-    range.filter(|&x| is_valid(x, false)).count()
-}
+type Num = u32;
 
-pub fn part2(range: RangeInclusive<u32>) -> usize {
-    range.filter(|&x| is_valid(x, true)).count()
+impl<'a> Solver<'a> for Day4 {
+    type Generated = RangeInclusive<Num>;
+    type Output = usize;
+
+    fn generator(input: &'a str) -> Self::Generated {
+        let mut inputs = input.split('-').map(|x| x.parse().unwrap());
+        RangeInclusive::new(inputs.next().unwrap(), inputs.next().unwrap())
+    }
+
+    fn part1(range: Self::Generated) -> Self::Output {
+        range.filter(|&x| is_valid(x, false)).count()
+    }
+
+    fn part2(range: Self::Generated) -> Self::Output {
+        range.filter(|&x| is_valid(x, true)).count()
+    }
 }
 
 #[inline(always)]
-fn is_valid(val: u32, part2: bool) -> bool {
+fn is_valid(val: Num, part2: bool) -> bool {
     let digits = to_digits(val);
     let mut seen_valid_pair = false;
     let mut no_descent = true;
@@ -38,11 +48,11 @@ fn is_valid(val: u32, part2: bool) -> bool {
     seen_valid_pair && no_descent
 }
 
-fn to_digits(mut val: u32) -> [u32; 6] {
+fn to_digits(mut val: Num) -> [u8; 6] {
     let mut output = [0; 6];
 
     for indexish in 0..6 {
-        output[5 - indexish] = val % 10;
+        output[5 - indexish] = (val % 10) as u8;
         val /= 10;
     }
 

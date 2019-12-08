@@ -1,24 +1,32 @@
 use crate::intcode::*;
+use crate::solver::Solver;
 
-pub fn generator(input: &str) -> Vec<isize> {
-    parse_intcode(input)
-}
+pub struct Day5 {}
 
-pub fn part1(mut memory: Vec<isize>) -> isize {
-    let outputs = run_intcode(&mut memory, vec![1]);
-    assert!(outputs[..outputs.len() - 1].iter().all(|&x| x == 0));
-    outputs[0]
-}
+impl<'a> Solver<'a> for Day5 {
+    type Generated = IntCode;
+    type Output = IntCodeCell;
 
-pub fn part2(mut memory: Vec<isize>) -> isize {
-    let outputs = run_intcode(&mut memory, vec![5]);
-    outputs[0]
+    fn generator(input: &str) -> Self::Generated {
+        parse_intcode(input)
+    }
+
+    fn part1(mut memory: Self::Generated) -> Self::Output {
+        let outputs = run_intcode(&mut memory, vec![1]);
+        assert!(outputs[..outputs.len() - 1].iter().all(|&x| x == 0));
+        outputs[0]
+    }
+
+    fn part2(mut memory: Self::Generated) -> Self::Output {
+        let outputs = run_intcode(&mut memory, vec![5]);
+        outputs[0]
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn test(mut memory: Vec<isize>, inputs: Vec<isize>, expected_output: &[isize]) {
+    fn test(mut memory: IntCode, inputs: Vec<IntCodeCell>, expected_output: &[IntCodeCell]) {
         let outputs = run_intcode(&mut memory, inputs);
         assert_eq!(outputs, expected_output);
     }
