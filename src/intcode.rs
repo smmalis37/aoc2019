@@ -7,7 +7,7 @@ pub(crate) type IntCodeCell = i64;
 #[derive(Clone)]
 pub struct IntCode {
     memory: Memory,
-    pc: IntCodeCell,
+    pc: usize,
     relative_base: IntCodeCell,
 }
 
@@ -24,7 +24,7 @@ impl std::str::FromStr for IntCode {
 }
 
 impl IntCode {
-    pub(crate) fn run_no_io(mut self, inputs: &[(IntCodeCell, IntCodeCell)]) -> Vec<IntCodeCell> {
+    pub(crate) fn run_no_io(mut self, inputs: &[(usize, IntCodeCell)]) -> Vec<IntCodeCell> {
         for &(input_location, input_value) in inputs {
             self.memory[input_location] = input_value;
         }
@@ -35,12 +35,9 @@ impl IntCode {
         self.memory.starting_memory
     }
 
-    pub(crate) fn run_single_threaded<'a>(
-        mut self,
-        input: impl IntoIterator<Item = &'a IntCodeCell>,
-    ) -> Vec<IntCodeCell> {
-        let (input_send, input_recv) = unbounded();
-        input.into_iter().for_each(|&x| input_send.send(x).unwrap());
+    pub(crate) fn run_single_threaded(mut self, input: &[IntCodeCell]) -> Vec<IntCodeCell> {
+        let (input_send, input_recv) = bounded(input.len());
+        input.iter().for_each(|&x| input_send.send(x).unwrap());
 
         let (output_send, output_recv) = unbounded();
 
@@ -109,14 +106,14 @@ impl IntCode {
             JumpIfFalse => cond == 0,
             _ => unreachable!(),
         } {
-            self.pc = new_pc;
+            self.pc = new_pc as usize;
         } else {
             self.pc += 3;
         }
     }
 
     fn get_parameter(&self, offset: usize, instr: Instruction) -> IntCodeCell {
-        let index = self.pc + offset as IntCodeCell;
+        let index = self.pc + offset;
 
         match instr.modes[offset - 1] {
             Position => self.memory[self.memory[index]],
@@ -126,7 +123,7 @@ impl IntCode {
     }
 
     fn get_mut_memory(&mut self, offset: usize, instr: Instruction) -> &mut IntCodeCell {
-        let index = self.pc + offset as IntCodeCell;
+        let index = self.pc + offset;
 
         match instr.modes[offset - 1] {
             Position => {
@@ -226,12 +223,10 @@ impl Memory {
     }
 }
 
-impl std::ops::Index<IntCodeCell> for Memory {
+impl std::ops::Index<usize> for Memory {
     type Output = IntCodeCell;
 
-    fn index(&self, index: IntCodeCell) -> &Self::Output {
-        let index = index as usize;
-
+    fn index(&self, index: usize) -> &Self::Output {
         if index < self.starting_memory.len() {
             &self.starting_memory[index]
         } else if index - self.starting_memory.len() < self.extra_memory.len() {
@@ -242,10 +237,16 @@ impl std::ops::Index<IntCodeCell> for Memory {
     }
 }
 
-impl std::ops::IndexMut<IntCodeCell> for Memory {
-    fn index_mut(&mut self, index: IntCodeCell) -> &mut Self::Output {
-        let index = index as usize;
+impl std::ops::Index<IntCodeCell> for Memory {
+    type Output = IntCodeCell;
 
+    fn index(&self, index: IntCodeCell) -> &Self::Output {
+        &self[index as usize]
+    }
+}
+
+impl std::ops::IndexMut<usize> for Memory {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         if index < self.starting_memory.len() {
             &mut self.starting_memory[index]
         } else {
@@ -257,5 +258,11 @@ impl std::ops::IndexMut<IntCodeCell> for Memory {
 
             &mut self.extra_memory[index]
         }
+    }
+}
+
+impl std::ops::IndexMut<IntCodeCell> for Memory {
+    fn index_mut(&mut self, index: IntCodeCell) -> &mut Self::Output {
+        &mut self[index as usize]
     }
 }
