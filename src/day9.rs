@@ -15,8 +15,8 @@ impl<'a> Solver<'a> for Day9 {
         intcode.run_single_threaded(vec![1])[0]
     }
 
-    fn part2(_data: Self::Generated) -> Self::Output {
-        0
+    fn part2(intcode: Self::Generated) -> Self::Output {
+        intcode.run_single_threaded(vec![2])[0]
     }
 }
 
