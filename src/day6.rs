@@ -1,4 +1,5 @@
 use crate::solver::Solver;
+use petgraph::algo::dijkstra;
 use petgraph::prelude::*;
 use petgraph::Undirected;
 
@@ -23,15 +24,12 @@ impl<'a> Solver<'a> for Day6 {
 
     fn part1(graph: Self::Generated) -> Self::Output {
         let root = "COM";
-        petgraph::algo::dijkstra(&graph, root, None, |e| *e.weight())
-            .values()
-            .sum()
+        dijkstra(&graph, root, None, |e| *e.weight()).values().sum()
     }
 
     fn part2(graph: Self::Generated) -> Self::Output {
         let destination = "SAN";
-        petgraph::algo::dijkstra(&graph, "YOU", Some(destination), |e| *e.weight())[&destination]
-            - 2
+        dijkstra(&graph, "YOU", Some(destination), |e| *e.weight())[&destination] - 2
     }
 }
 

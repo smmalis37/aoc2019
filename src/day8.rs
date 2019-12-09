@@ -1,5 +1,5 @@
 use crate::solver::Solver;
-use std::io::*;
+use std::io::{stdout, Write};
 
 type Pixel = u8;
 type Layer = Vec<Vec<Pixel>>;

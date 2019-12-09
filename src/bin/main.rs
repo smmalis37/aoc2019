@@ -1,6 +1,4 @@
 use aoc2019::*;
-use std::error::Error;
-use std::fmt::Display;
 use std::time::Instant;
 
 macro_rules! days {
@@ -13,10 +11,9 @@ macro_rules! days {
     };
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
     println!("AOC 2019");
     days!(1, 2, 3, 4, 5, 6, 7, 8, 9);
-    Ok(())
 }
 
 fn run<'a, S: solver::Solver<'a>>(day_number: u8, input: &'a str) {
@@ -36,7 +33,7 @@ fn run<'a, S: solver::Solver<'a>>(day_number: u8, input: &'a str) {
     run_half(generated, 2, S::part2);
 }
 
-fn run_half<T, O: Display>(input: T, part_number: u8, part: impl Fn(T) -> O) {
+fn run_half<T, O: std::fmt::Display>(input: T, part_number: u8, part: impl Fn(T) -> O) {
     let start_time = Instant::now();
     let result = part(input);
     let final_time = Instant::now();

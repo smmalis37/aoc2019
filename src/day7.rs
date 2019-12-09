@@ -1,7 +1,8 @@
 use crate::intcode::*;
 use crate::solver::Solver;
-use crossbeam::channel::*;
+use crossbeam::channel::unbounded;
 use permutohedron::Heap;
+use std::cmp::max;
 
 pub struct Day7 {}
 
@@ -26,7 +27,7 @@ impl<'a> Solver<'a> for Day7 {
                 signal = output[0];
             }
 
-            max_signal = std::cmp::max(max_signal, signal);
+            max_signal = max(max_signal, signal);
         }
 
         max_signal
@@ -72,7 +73,7 @@ impl<'a> Solver<'a> for Day7 {
             channels[0].0.send(0).unwrap();
             wg.wait();
             let signal = channels[0].1.recv().unwrap();
-            max_signal = std::cmp::max(max_signal, signal);
+            max_signal = max(max_signal, signal);
         }
 
         max_signal

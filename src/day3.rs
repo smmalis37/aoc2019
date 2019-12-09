@@ -1,6 +1,6 @@
 use crate::solver::Solver;
 use arrayvec::ArrayVec;
-use std::collections::*;
+use std::collections::HashMap;
 
 #[derive(Copy, Clone)]
 enum Direction {
@@ -12,12 +12,14 @@ enum Direction {
 
 impl std::str::FromStr for Direction {
     type Err = ();
+
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use Direction::*;
         Ok(match s {
-            "U" => Self::Up,
-            "D" => Self::Down,
-            "L" => Self::Left,
-            "R" => Self::Right,
+            "U" => Up,
+            "D" => Down,
+            "L" => Left,
+            "R" => Right,
             _ => unreachable!(),
         })
     }
@@ -25,11 +27,12 @@ impl std::str::FromStr for Direction {
 
 impl Direction {
     fn to_unit(self) -> Coordinate {
+        use Direction::*;
         match self {
-            Direction::Up => Coordinate { x: 0, y: 1 },
-            Direction::Down => Coordinate { x: 0, y: -1 },
-            Direction::Left => Coordinate { x: -1, y: 0 },
-            Direction::Right => Coordinate { x: 1, y: 0 },
+            Up => Coordinate { x: 0, y: 1 },
+            Down => Coordinate { x: 0, y: -1 },
+            Left => Coordinate { x: -1, y: 0 },
+            Right => Coordinate { x: 1, y: 0 },
         }
     }
 }

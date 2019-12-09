@@ -119,9 +119,9 @@ impl IntCode {
         let index = self.pc + offset as IntCodeCell;
 
         match instr.modes[offset - 1] {
-            Mode::Position => self.memory[self.memory[index]],
-            Mode::Immediate => self.memory[index],
-            Mode::Relative => self.memory[self.memory[index] + self.relative_base],
+            Position => self.memory[self.memory[index]],
+            Immediate => self.memory[index],
+            Relative => self.memory[self.memory[index] + self.relative_base],
         }
     }
 
@@ -129,12 +129,12 @@ impl IntCode {
         let index = self.pc + offset as IntCodeCell;
 
         match instr.modes[offset - 1] {
-            Mode::Position => {
+            Position => {
                 let first = self.memory[index];
                 &mut self.memory[first]
             }
-            Mode::Immediate => unreachable!(),
-            Mode::Relative => {
+            Immediate => unreachable!(),
+            Relative => {
                 let first = self.memory[index] + self.relative_base;
                 &mut self.memory[first]
             }
@@ -193,7 +193,7 @@ impl Opcode {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone)]
 enum Mode {
     Position,
     Immediate,
