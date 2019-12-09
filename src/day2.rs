@@ -8,7 +8,7 @@ impl<'a> Solver<'a> for Day2 {
     type Output = IntCodeCell;
 
     fn generator(input: &'a str) -> Self::Generated {
-        parse_intcode(input)
+        input.parse().unwrap()
     }
 
     fn part1(intcode: Self::Generated) -> Self::Output {
@@ -36,7 +36,7 @@ mod tests {
     #[test]
     fn d2p1() {
         fn test(program: &str, expected_output: &[IntCodeCell]) {
-            let finished_memory = parse_intcode(program).run_no_io(&[]);
+            let finished_memory = program.parse::<IntCode>().unwrap().run_no_io(&[]);
             assert_eq!(finished_memory, expected_output);
         }
 

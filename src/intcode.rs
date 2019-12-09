@@ -11,11 +11,15 @@ pub struct IntCode {
     relative_base: IntCodeCell,
 }
 
-pub(crate) fn parse_intcode(input: &str) -> IntCode {
-    IntCode {
-        memory: Memory::new(input.split(',').map(|l| l.parse().unwrap()).collect()),
-        pc: 0,
-        relative_base: 0,
+impl std::str::FromStr for IntCode {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            memory: Memory::new(s.split(',').map(|l| l.parse()).collect::<Result<_, _>>()?),
+            pc: 0,
+            relative_base: 0,
+        })
     }
 }
 

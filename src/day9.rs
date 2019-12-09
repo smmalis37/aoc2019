@@ -8,7 +8,7 @@ impl<'a> Solver<'a> for Day9 {
     type Output = IntCodeCell;
 
     fn generator(input: &'a str) -> Self::Generated {
-        parse_intcode(input)
+        input.parse().unwrap()
     }
 
     fn part1(intcode: Self::Generated) -> Self::Output {
@@ -25,7 +25,7 @@ mod tests {
     use super::*;
 
     fn test(program: &str, expected_output: &[IntCodeCell]) {
-        let outputs = parse_intcode(program).run_single_threaded(&[]);
+        let outputs = program.parse::<IntCode>().unwrap().run_single_threaded(&[]);
         assert_eq!(outputs, expected_output);
     }
 

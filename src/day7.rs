@@ -10,7 +10,7 @@ impl<'a> Solver<'a> for Day7 {
     type Output = IntCodeCell;
 
     fn generator(input: &'a str) -> Self::Generated {
-        parse_intcode(input)
+        input.parse().unwrap()
     }
 
     fn part1(start_intcode: Self::Generated) -> Self::Output {
