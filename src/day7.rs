@@ -22,8 +22,7 @@ impl<'a> Solver<'a> for Day7 {
 
             for phase in settings.iter() {
                 let mut memory = start_memory.clone();
-                let output =
-                    run_intcode_single_threaded(&mut memory, [*phase, signal].iter().copied());
+                let output = run_intcode_single_threaded(&mut memory, vec![*phase, signal]);
                 signal = output[0];
             }
 
