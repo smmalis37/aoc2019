@@ -11,21 +11,15 @@ impl<'a> Solver<'a> for Day2 {
         parse_intcode(input)
     }
 
-    fn part1(mut memory: Self::Generated) -> Self::Output {
-        memory[1] = 12;
-        memory[2] = 2;
-        run_intcode_no_io(&mut memory);
-        memory[0]
+    fn part1(intcode: Self::Generated) -> Self::Output {
+        intcode.run_no_io(&[(1, 12), (2, 2)])[0]
     }
 
-    fn part2(start_memory: Self::Generated) -> Self::Output {
+    fn part2(start_intcode: Self::Generated) -> Self::Output {
         for verb in 0..=99 {
             for noun in 0..=99 {
-                let mut memory = start_memory.clone();
-                memory[1] = noun;
-                memory[2] = verb;
-                run_intcode_no_io(&mut memory);
-                if memory[0] == 19_690_720 {
+                let intcode = start_intcode.clone();
+                if intcode.run_no_io(&[(1, noun), (2, verb)])[0] == 19_690_720 {
                     return 100 * noun + verb;
                 }
             }
@@ -41,17 +35,14 @@ mod tests {
 
     #[test]
     fn d2p1() {
-        fn test(mut memory: IntCode, expected_output: &IntCodeSlice) {
-            run_intcode_no_io(&mut memory);
-            assert_eq!(memory, expected_output);
+        fn test(program: &str, expected_output: &[IntCodeCell]) {
+            let finished_memory = parse_intcode(program).run_no_io(&[]);
+            assert_eq!(finished_memory, expected_output);
         }
 
-        test(vec![1, 0, 0, 0, 99], &[2, 0, 0, 0, 99]);
-        test(vec![2, 3, 0, 3, 99], &[2, 3, 0, 6, 99]);
-        test(vec![2, 4, 4, 5, 99, 0], &[2, 4, 4, 5, 99, 9801]);
-        test(
-            vec![1, 1, 1, 4, 99, 5, 6, 0, 99],
-            &[30, 1, 1, 4, 2, 5, 6, 0, 99],
-        );
+        test("1,0,0,0,99", &[2, 0, 0, 0, 99]);
+        test("2,3,0,3,99", &[2, 3, 0, 6, 99]);
+        test("2,4,4,5,99,0", &[2, 4, 4, 5, 99, 9801]);
+        test("1,1,1,4,99,5,6,0,99", &[30, 1, 1, 4, 2, 5, 6, 0, 99]);
     }
 }

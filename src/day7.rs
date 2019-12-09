@@ -13,7 +13,7 @@ impl<'a> Solver<'a> for Day7 {
         parse_intcode(input)
     }
 
-    fn part1(start_memory: Self::Generated) -> Self::Output {
+    fn part1(start_intcode: Self::Generated) -> Self::Output {
         let mut phases = [0, 1, 2, 3, 4];
         let mut max_signal = 0;
 
@@ -21,8 +21,8 @@ impl<'a> Solver<'a> for Day7 {
             let mut signal = 0;
 
             for phase in settings.iter() {
-                let mut memory = start_memory.clone();
-                let output = run_intcode_single_threaded(&mut memory, vec![*phase, signal]);
+                let intcode = start_intcode.clone();
+                let output = intcode.run_single_threaded(vec![*phase, signal]);
                 signal = output[0];
             }
 
@@ -32,7 +32,7 @@ impl<'a> Solver<'a> for Day7 {
         max_signal
     }
 
-    fn part2(start_memory: Self::Generated) -> Self::Output {
+    fn part2(start_intcode: Self::Generated) -> Self::Output {
         let mut phases = [5, 6, 7, 8, 9];
         let mut max_signal = 0;
         let channels = [
@@ -52,7 +52,7 @@ impl<'a> Solver<'a> for Day7 {
             let wg = crossbeam::sync::WaitGroup::new();
 
             for (index, phase) in settings.iter().enumerate() {
-                let mut memory = start_memory.clone();
+                let intcode = start_intcode.clone();
                 let wg = wg.clone();
 
                 let (input_send, input_recv) = channels[index].clone();
@@ -64,7 +64,7 @@ impl<'a> Solver<'a> for Day7 {
                 };
 
                 threads.spawn(move || {
-                    run_intcode_multi_threaded(&mut memory, input_recv, output_send);
+                    intcode.run_multi_threaded(input_recv, output_send);
                     wg.wait();
                 });
             }
