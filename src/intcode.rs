@@ -31,12 +31,12 @@ impl IntCode {
         self.memory.starting_memory
     }
 
-    pub(crate) fn run_single_threaded(
+    pub(crate) fn run_single_threaded<'a>(
         mut self,
-        input: impl IntoIterator<Item = IntCodeCell>,
+        input: impl IntoIterator<Item = &'a IntCodeCell>,
     ) -> Vec<IntCodeCell> {
         let (input_send, input_recv) = unbounded();
-        input.into_iter().for_each(|x| input_send.send(x).unwrap());
+        input.into_iter().for_each(|&x| input_send.send(x).unwrap());
 
         let (output_send, output_recv) = unbounded();
 
