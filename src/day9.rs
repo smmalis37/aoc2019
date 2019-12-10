@@ -12,7 +12,9 @@ impl<'a> Solver<'a> for Day9 {
     }
 
     fn part1(intcode: Self::Generated) -> Self::Output {
-        intcode.run_single_threaded(&[1])[0]
+        let outputs = intcode.run_single_threaded(&[1]);
+        assert!(outputs.len() == 1);
+        outputs[0]
     }
 
     fn part2(intcode: Self::Generated) -> Self::Output {
