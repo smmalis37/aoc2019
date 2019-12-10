@@ -13,9 +13,9 @@ impl<'a> Solver<'a> for Day6 {
         let mut graph = GraphMap::new();
 
         for l in input.lines() {
-            let mut parts = l.split(')');
-            let parent = parts.next().unwrap();
-            let child = parts.next().unwrap();
+            let separator = l.find(')').unwrap();
+            let parent = &l[0..separator];
+            let child = &l[separator + 1..];
             graph.add_edge(parent, child, 1);
         }
 
