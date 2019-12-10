@@ -34,14 +34,11 @@ fn run<'a, S: solver::Solver<'a>>(day_number: u8, input: &'a str) {
 }
 
 fn run_half<T, O: std::fmt::Display>(input: T, part_number: u8, part: impl Fn(T) -> O) {
+    print!("Part {}: ", part_number);
+
     let start_time = Instant::now();
     let result = part(input);
     let final_time = Instant::now();
 
-    println!(
-        "Part {}: {}\n\trunner: {:?}",
-        part_number,
-        result,
-        (final_time - start_time)
-    );
+    println!("{}\n\trunner: {:?}", result, (final_time - start_time));
 }

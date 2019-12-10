@@ -34,6 +34,7 @@ impl<'a> Solver<'a> for Day8 {
         let width = image[0][0].len();
         let stdout = stdout();
         let mut out = stdout.lock();
+        writeln!(out).unwrap();
 
         for h in 0..height {
             for w in 0..width {
