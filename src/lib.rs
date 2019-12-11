@@ -1,5 +1,6 @@
 #![feature(slice_partition_dedup)]
 
+mod coord_system;
 pub mod day1;
 pub mod day10;
 pub mod day2;

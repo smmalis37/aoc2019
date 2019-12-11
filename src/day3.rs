@@ -1,61 +1,15 @@
+use crate::coord_system::*;
 use crate::solver::Solver;
 use arrayvec::ArrayVec;
 use std::collections::HashMap;
 
-#[derive(Copy, Clone)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-impl std::str::FromStr for Direction {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use Direction::*;
-        Ok(match s {
-            "U" => Up,
-            "D" => Down,
-            "L" => Left,
-            "R" => Right,
-            _ => unreachable!(),
-        })
-    }
-}
-
-impl Direction {
-    fn to_unit(self) -> Coordinate {
-        use Direction::*;
-        match self {
-            Up => Coordinate { x: 0, y: 1 },
-            Down => Coordinate { x: 0, y: -1 },
-            Left => Coordinate { x: -1, y: 0 },
-            Right => Coordinate { x: 1, y: 0 },
-        }
-    }
-}
-
 type Distance = u32;
+type Coordinate = SignedCoordinate;
 
 #[derive(Copy, Clone)]
 struct PathSegment {
     distance: Distance,
     direction: Direction,
-}
-
-#[derive(Copy, Clone, Hash, Eq, PartialEq)]
-pub struct Coordinate {
-    x: i32,
-    y: i32,
-}
-
-impl std::ops::AddAssign for Coordinate {
-    fn add_assign(&mut self, rhs: Self) {
-        self.x += rhs.x;
-        self.y += rhs.y;
-    }
 }
 
 pub struct Day3 {}
