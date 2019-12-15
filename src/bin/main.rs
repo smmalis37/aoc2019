@@ -1,4 +1,5 @@
-use aoc2019::*;
+use aoc2019::days::*;
+use aoc2019::solver::Solver;
 use std::time::Instant;
 
 macro_rules! days {
@@ -16,7 +17,7 @@ fn main() {
     days!(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);
 }
 
-fn run<'a, S: solver::Solver<'a>>(day_number: u8, input: &'a str) {
+fn run<'a, S: Solver<'a>>(day_number: u8, input: &'a str) {
     let trimmed_input = input.trim();
 
     let start_time = Instant::now();

@@ -1,4 +1,4 @@
-use crate::coord_system::*;
+use crate::helpers::coord_system::*;
 use crate::solver::Solver;
 use arrayvec::ArrayVec;
 use std::collections::HashMap;
@@ -30,7 +30,7 @@ impl<'a> Solver<'a> for Day3 {
                         })
                         .collect()
                 })
-                .collect::<ArrayVec<[Vec<_>; 2]>>(),
+                .collect(),
         )
     }
 

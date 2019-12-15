@@ -1,4 +1,4 @@
-use crate::coord_system::*;
+use crate::helpers::coord_system::*;
 use crate::solver::Solver;
 use noisy_float::prelude::*;
 use std::f32::consts::*;

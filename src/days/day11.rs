@@ -1,5 +1,5 @@
-use crate::coord_system::*;
-use crate::intcode::*;
+use crate::helpers::coord_system::*;
+use crate::helpers::intcode::*;
 use crate::solver::Solver;
 use std::collections::HashMap;
 
@@ -60,7 +60,7 @@ impl<'a> Solver<'a> for Day11 {
 fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<SignedCoordinate, IntCodeCell> {
     let mut position = SignedCoordinate { x: 0, y: 0 };
     let mut direction = Direction::Up;
-    let mut grid = HashMap::<SignedCoordinate, IntCodeCell>::new();
+    let mut grid = HashMap::new();
 
     grid.insert(position, start_value);
 

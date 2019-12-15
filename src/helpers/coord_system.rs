@@ -1,7 +1,7 @@
 use std::ops::*;
 
-pub type SignedCoordinate = Coordinate<i32>;
-pub type UnsignedCoordinate = Coordinate<usize>;
+pub(crate) type SignedCoordinate = Coordinate<i32>;
+pub(crate) type UnsignedCoordinate = Coordinate<usize>;
 
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
 pub struct Coordinate<T> {

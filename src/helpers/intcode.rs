@@ -1,4 +1,5 @@
 use crossbeam::channel::*;
+use std::ops::{Index, IndexMut};
 use Mode::*;
 use Opcode::*;
 
@@ -243,7 +244,7 @@ impl Memory {
     }
 }
 
-impl std::ops::Index<usize> for Memory {
+impl Index<usize> for Memory {
     type Output = IntCodeCell;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -257,7 +258,7 @@ impl std::ops::Index<usize> for Memory {
     }
 }
 
-impl std::ops::Index<IntCodeCell> for Memory {
+impl Index<IntCodeCell> for Memory {
     type Output = IntCodeCell;
 
     fn index(&self, index: IntCodeCell) -> &Self::Output {
@@ -265,7 +266,7 @@ impl std::ops::Index<IntCodeCell> for Memory {
     }
 }
 
-impl std::ops::IndexMut<usize> for Memory {
+impl IndexMut<usize> for Memory {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         if index < self.starting_memory.len() {
             &mut self.starting_memory[index]
@@ -281,7 +282,7 @@ impl std::ops::IndexMut<usize> for Memory {
     }
 }
 
-impl std::ops::IndexMut<IntCodeCell> for Memory {
+impl IndexMut<IntCodeCell> for Memory {
     fn index_mut(&mut self, index: IntCodeCell) -> &mut Self::Output {
         &mut self[index as usize]
     }
