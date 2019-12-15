@@ -51,7 +51,7 @@ impl<'a> Solver<'a> for Day10 {
     }
 
     fn part2(asteroid_coords: Self::Generated) -> Self::Output {
-        let part1_coord = Coordinate { x: 11, y: 13 };
+        let part1_coord = Self::part1(asteroid_coords.clone()).0;
 
         let mut angles: Vec<_> = asteroid_coords
             .into_iter()
