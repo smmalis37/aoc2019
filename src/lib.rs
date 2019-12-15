@@ -1,9 +1,10 @@
-// Needed for technically correct day 10 solution, but not for one thats good enough.
-//#![feature(slice_partition_dedup)]
+#![feature(slice_partition_dedup)]
+#![feature(try_blocks)]
 
 mod coord_system;
 pub mod day1;
 pub mod day10;
+pub mod day11;
 pub mod day2;
 pub mod day3;
 pub mod day4;

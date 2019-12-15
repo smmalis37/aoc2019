@@ -39,14 +39,33 @@ impl std::str::FromStr for Direction {
     }
 }
 
+use Direction::*;
+
 impl Direction {
     pub(crate) fn to_unit(self) -> SignedCoordinate {
-        use Direction::*;
         match self {
             Up => Coordinate { x: 0, y: 1 },
             Down => Coordinate { x: 0, y: -1 },
             Left => Coordinate { x: -1, y: 0 },
             Right => Coordinate { x: 1, y: 0 },
+        }
+    }
+
+    pub(crate) fn turn_left(self) -> Self {
+        match self {
+            Up => Left,
+            Left => Down,
+            Down => Right,
+            Right => Up,
+        }
+    }
+
+    pub(crate) fn turn_right(self) -> Self {
+        match self {
+            Up => Right,
+            Right => Down,
+            Down => Left,
+            Left => Up,
         }
     }
 }
