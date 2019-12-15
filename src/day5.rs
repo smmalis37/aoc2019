@@ -12,13 +12,13 @@ impl<'a> Solver<'a> for Day5 {
     }
 
     fn part1(intcode: Self::Generated) -> Self::Output {
-        let outputs = intcode.run_single_threaded(&[1]);
+        let outputs = intcode.run_predetermined(&[1]);
         assert!(outputs[..outputs.len() - 1].iter().all(|&x| x == 0));
         *outputs.last().unwrap()
     }
 
     fn part2(intcode: Self::Generated) -> Self::Output {
-        let outputs = intcode.run_single_threaded(&[5]);
+        let outputs = intcode.run_predetermined(&[5]);
         outputs[0]
     }
 }
@@ -31,7 +31,7 @@ mod tests {
         let outputs = program
             .parse::<IntCode>()
             .unwrap()
-            .run_single_threaded(inputs);
+            .run_predetermined(inputs);
         assert_eq!(outputs, expected_output);
     }
 

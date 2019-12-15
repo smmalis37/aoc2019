@@ -82,7 +82,7 @@ impl<'a> Solver<'a> for Day10 {
 
 fn angle_distance_to_coord(origin: Coordinate, angle: R32, distance: R32) -> Coordinate {
     let (x_unit, y_unit) = angle.sin_cos();
-    let y_unit = y_unit * -1.0;
+    let y_unit = -y_unit;
     let x = ((x_unit * distance) + origin.x as f32).round().raw() as usize;
     let y = ((y_unit * distance) + origin.y as f32).round().raw() as usize;
     Coordinate { x, y }

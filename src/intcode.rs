@@ -24,30 +24,32 @@ impl std::str::FromStr for IntCode {
 }
 
 impl IntCode {
-    pub(crate) fn run_no_io(mut self, inputs: &[(usize, IntCodeCell)]) -> Vec<IntCodeCell> {
-        for &(index, value) in inputs {
-            self.replace_cell(index, value);
-        }
-        let (_, input_recv) = bounded(0);
-        let (output_send, _) = bounded(0);
-
-        self.run(input_recv, output_send);
-        self.memory.starting_memory
-    }
-
     pub(crate) fn replace_cell(&mut self, index: usize, value: IntCodeCell) {
         self.memory[index] = value;
     }
 
-    pub(crate) fn run_single_threaded(mut self, input: &[IntCodeCell]) -> Vec<IntCodeCell> {
-        let (input_send, input_recv) = bounded(input.len());
-        input.iter().for_each(|&x| input_send.send(x).unwrap());
+    #[must_use]
+    pub(crate) fn run_no_io(mut self, inputs: &[(usize, IntCodeCell)]) -> Vec<IntCodeCell> {
+        for &(index, value) in inputs {
+            self.replace_cell(index, value);
+        }
+        let _ = self.run(|_| unreachable!());
+        self.memory.starting_memory
+    }
 
-        let (output_send, output_recv) = unbounded();
+    #[must_use]
+    pub(crate) fn run_predetermined(mut self, input: &[IntCodeCell]) -> Vec<IntCodeCell> {
+        let mut inputs = input.iter();
 
-        self.run(input_recv, output_send);
+        self.run(|_| *inputs.next().unwrap())
+    }
 
-        output_recv.into_iter().collect()
+    #[must_use]
+    pub(crate) fn run_demand_driven(
+        mut self,
+        input: impl FnMut(&[IntCodeCell]) -> IntCodeCell,
+    ) -> Vec<IntCodeCell> {
+        self.run(input)
     }
 
     pub(crate) fn run_multi_threaded(
@@ -55,33 +57,21 @@ impl IntCode {
         input: Receiver<IntCodeCell>,
         output: Sender<IntCodeCell>,
     ) {
-        self.run(input, output)
+        let final_outputs = self.run(|o| {
+            o.iter().for_each(|&x| {
+                output.send(x).unwrap();
+            });
+            input.recv().unwrap()
+        });
+
+        final_outputs.into_iter().for_each(|x| {
+            output.send(x).unwrap();
+        });
     }
 
-    pub(crate) fn spawn_multi_threaded(
-        self,
-        input_bound: Option<usize>,
-        output_bound: Option<usize>,
-    ) -> (
-        Sender<IntCodeCell>,
-        Receiver<IntCodeCell>,
-        std::thread::JoinHandle<()>,
-    ) {
-        let (input_send, input_recv) = if let Some(input_size) = input_bound {
-            bounded(input_size)
-        } else {
-            unbounded()
-        };
-        let (output_send, output_recv) = if let Some(output_size) = output_bound {
-            bounded(output_size)
-        } else {
-            unbounded()
-        };
-        let thread = std::thread::spawn(move || self.run_multi_threaded(input_recv, output_send));
-        (input_send, output_recv, thread)
-    }
-
-    fn run(&mut self, input: Receiver<IntCodeCell>, output: Sender<IntCodeCell>) {
+    #[must_use]
+    fn run(&mut self, mut input: impl FnMut(&[IntCodeCell]) -> IntCodeCell) -> Vec<IntCodeCell> {
+        let mut outputs = Vec::new();
         loop {
             let instr = Instruction::new(self.memory[self.pc]);
             match instr.opcode {
@@ -89,12 +79,13 @@ impl IntCode {
                 JumpIfTrue | JumpIfFalse => self.do_jump(instr),
 
                 Input => {
-                    *self.get_mut_memory(1, instr) = input.recv().unwrap();
+                    *self.get_mut_memory(1, instr) = input(&outputs);
+                    outputs.clear();
                     self.pc += 2;
                 }
 
                 Output => {
-                    output.send(self.get_parameter(1, instr)).unwrap();
+                    outputs.push(self.get_parameter(1, instr));
                     self.pc += 2;
                 }
 
@@ -106,6 +97,8 @@ impl IntCode {
                 Terminate => break,
             }
         }
+
+        outputs
     }
 
     fn do_math(&mut self, instr: Instruction) {

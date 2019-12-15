@@ -64,15 +64,11 @@ fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<SignedCoordina
 
     grid.insert(position, start_value);
 
-    let (input_send, output_recv, thread) = intcode.spawn_multi_threaded(None, None);
+    let _ = intcode.run_demand_driven(|outputs| {
+        for o in outputs.chunks(2) {
+            grid.insert(position, o[0]);
 
-    let _: Result<_, Box<dyn std::error::Error>> = try {
-        loop {
-            input_send.send(*grid.get(&position).unwrap_or(&0))?;
-            grid.insert(position, output_recv.recv()?);
-            let turn = output_recv.recv()?;
-
-            if turn == 0 {
+            if o[1] == 0 {
                 direction = direction.turn_left();
             } else {
                 direction = direction.turn_right();
@@ -80,8 +76,9 @@ fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<SignedCoordina
 
             position += direction.to_unit();
         }
-    };
 
-    thread.join().unwrap();
+        *grid.get(&position).unwrap_or(&0)
+    });
+
     grid
 }

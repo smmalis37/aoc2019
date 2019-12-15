@@ -23,7 +23,7 @@ impl<'a> Solver<'a> for Day7 {
 
             for phase in settings.iter() {
                 let intcode = start_intcode.clone();
-                let output = intcode.run_single_threaded(&[*phase, signal]);
+                let output = intcode.run_predetermined(&[*phase, signal]);
                 signal = output[0];
             }
 

@@ -13,32 +13,22 @@ impl<'a> Solver<'a> for Day13 {
     }
 
     fn part1(intcode: Self::Generated) -> Self::Output {
-        let outputs = intcode.run_single_threaded(&[]);
+        let outputs = intcode.run_predetermined(&[]);
         outputs.chunks(3).filter(|&x| x[2] == 2).count()
     }
 
     fn part2(mut intcode: Self::Generated) -> Self::Output {
         intcode.replace_cell(0, 2);
-        let (input_send, output_recv, thread) = intcode.spawn_multi_threaded(Some(1), None);
         let mut score = 0;
         let mut paddle_x = None;
-        let mut ball_x = None;
-        let mut buffer = [0; 3];
-        let mut buffer_index = 0;
 
-        loop {
-            let recv_result = output_recv.recv();
-            if recv_result.is_err() {
-                break;
-            }
-            buffer[buffer_index] = recv_result.unwrap();
-            buffer_index += 1;
+        let final_outputs = intcode.run_demand_driven(|outputs| {
+            let mut ball_x = None;
 
-            if buffer_index == 3 {
-                let x = buffer[0];
-                let y = buffer[1];
-                let tile = buffer[2];
-                buffer_index = 0;
+            for o in outputs.chunks(3) {
+                let x = o[0];
+                let y = o[1];
+                let tile = o[2];
 
                 if x == -1 && y == 0 {
                     score = tile;
@@ -49,26 +39,25 @@ impl<'a> Solver<'a> for Day13 {
                 }
             }
 
-            if paddle_x.is_none() || ball_x.is_none() {
-                continue;
-            }
-
-            let action = match paddle_x.cmp(&ball_x) {
+            let action = match paddle_x.unwrap().cmp(&ball_x.unwrap()) {
                 Ordering::Less => 1,
                 Ordering::Equal => 0,
                 Ordering::Greater => -1,
             };
 
-            input_send.send(action).unwrap();
-
             if action != 0 {
                 paddle_x = None;
             }
 
-            ball_x = None;
+            action
+        });
+
+        for o in final_outputs.chunks(3) {
+            if o[0] == -1 && o[1] == 0 {
+                score = o[2];
+            }
         }
 
-        thread.join().unwrap();
         score as usize
     }
 }
