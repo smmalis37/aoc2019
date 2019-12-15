@@ -25,14 +25,18 @@ impl std::str::FromStr for IntCode {
 
 impl IntCode {
     pub(crate) fn run_no_io(mut self, inputs: &[(usize, IntCodeCell)]) -> Vec<IntCodeCell> {
-        for &(input_location, input_value) in inputs {
-            self.memory[input_location] = input_value;
+        for &(index, value) in inputs {
+            self.replace_cell(index, value);
         }
         let (_, input_recv) = bounded(0);
         let (output_send, _) = bounded(0);
 
         self.run(input_recv, output_send);
         self.memory.starting_memory
+    }
+
+    pub(crate) fn replace_cell(&mut self, index: usize, value: IntCodeCell) {
+        self.memory[index] = value;
     }
 
     pub(crate) fn run_single_threaded(mut self, input: &[IntCodeCell]) -> Vec<IntCodeCell> {
@@ -52,6 +56,29 @@ impl IntCode {
         output: Sender<IntCodeCell>,
     ) {
         self.run(input, output)
+    }
+
+    pub(crate) fn spawn_multi_threaded(
+        self,
+        input_bound: Option<usize>,
+        output_bound: Option<usize>,
+    ) -> (
+        Sender<IntCodeCell>,
+        Receiver<IntCodeCell>,
+        std::thread::JoinHandle<()>,
+    ) {
+        let (input_send, input_recv) = if let Some(input_size) = input_bound {
+            bounded(input_size)
+        } else {
+            unbounded()
+        };
+        let (output_send, output_recv) = if let Some(output_size) = output_bound {
+            bounded(output_size)
+        } else {
+            unbounded()
+        };
+        let thread = std::thread::spawn(move || self.run_multi_threaded(input_recv, output_send));
+        (input_send, output_recv, thread)
     }
 
     fn run(&mut self, input: Receiver<IntCodeCell>, output: Sender<IntCodeCell>) {

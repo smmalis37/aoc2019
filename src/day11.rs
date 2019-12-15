@@ -1,7 +1,6 @@
 use crate::coord_system::*;
 use crate::intcode::*;
 use crate::solver::Solver;
-use crossbeam::channel::unbounded;
 use std::collections::HashMap;
 
 pub struct Day11 {}
@@ -62,12 +61,10 @@ fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<SignedCoordina
     let mut position = SignedCoordinate { x: 0, y: 0 };
     let mut direction = Direction::Up;
     let mut grid = HashMap::<SignedCoordinate, IntCodeCell>::new();
-    let (input_send, input_recv) = unbounded();
-    let (output_send, output_recv) = unbounded();
 
     grid.insert(position, start_value);
 
-    let thread = std::thread::spawn(|| intcode.run_multi_threaded(input_recv, output_send));
+    let (input_send, output_recv, thread) = intcode.spawn_multi_threaded(None, None);
 
     let _: Result<_, Box<dyn std::error::Error>> = try {
         loop {
