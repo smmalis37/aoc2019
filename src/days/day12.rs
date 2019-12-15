@@ -3,18 +3,20 @@ use std::cmp::Ordering;
 
 pub struct Day12 {}
 
+type N = i64;
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Planet {
-    x: i64,
-    y: i64,
-    z: i64,
-    vel_x: i64,
-    vel_y: i64,
-    vel_z: i64,
+    x: N,
+    y: N,
+    z: N,
+    vel_x: N,
+    vel_y: N,
+    vel_z: N,
 }
 
 impl Planet {
-    fn new(x: i64, y: i64, z: i64, vel_x: i64, vel_y: i64, vel_z: i64) -> Self {
+    fn new(x: N, y: N, z: N, vel_x: N, vel_y: N, vel_z: N) -> Self {
         Self {
             x,
             y,
@@ -28,7 +30,7 @@ impl Planet {
 
 impl<'a> Solver<'a> for Day12 {
     type Generated = Vec<Planet>;
-    type Output = i64;
+    type Output = N;
 
     fn generator(input: &'a str) -> Self::Generated {
         input
@@ -84,8 +86,8 @@ impl<'a> Solver<'a> for Day12 {
 fn check_axis(
     planets: &[Planet],
     start_planets: &[Planet],
-    position: impl Fn(&Planet) -> i64,
-    velocity: impl Fn(&Planet) -> i64,
+    position: impl Fn(&Planet) -> N,
+    velocity: impl Fn(&Planet) -> N,
 ) -> bool {
     planets
         .iter()
@@ -109,7 +111,7 @@ fn run_step(planets: &mut <Day12 as Solver>::Generated) {
     }
 }
 
-fn gravity_adjust(pos1: i64, vel1: &mut i64, pos2: i64, vel2: &mut i64) {
+fn gravity_adjust(pos1: N, vel1: &mut N, pos2: N, vel2: &mut N) {
     let factor = match pos1.cmp(&pos2) {
         Ordering::Less => 1,
         Ordering::Equal => 0,
@@ -126,7 +128,7 @@ fn velocity_adjust(planet: &mut Planet) {
     planet.z += planet.vel_z;
 }
 
-fn energy(p: &Planet) -> i64 {
+fn energy(p: &Planet) -> N {
     let pos_energy = p.x.abs() + p.y.abs() + p.z.abs();
     let kin_energy = p.vel_x.abs() + p.vel_y.abs() + p.vel_z.abs();
     pos_energy * kin_energy
@@ -265,7 +267,7 @@ mod tests {
             ]
         );
 
-        assert_eq!(planets.iter().map(energy).sum::<i64>(), 179);
+        assert_eq!(planets.iter().map(energy).sum::<N>(), 179);
     }
 
     #[test]
@@ -417,7 +419,7 @@ mod tests {
             ]
         );
 
-        assert_eq!(planets.iter().map(energy).sum::<i64>(), 1940);
+        assert_eq!(planets.iter().map(energy).sum::<N>(), 1940);
     }
 
     #[test]
