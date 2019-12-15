@@ -7,51 +7,84 @@ use std::collections::HashMap;
 pub struct Day11 {}
 
 impl<'a> Solver<'a> for Day11 {
-    type Generated = IntCode;
+    type Generated = impl FnOnce(IntCodeCell) -> HashMap<SignedCoordinate, IntCodeCell> + Clone;
     type Output = usize;
 
     fn generator(input: &'a str) -> Self::Generated {
-        input.parse().unwrap()
+        let intcode = input.parse().unwrap();
+        move |x| run_bot(intcode, x)
     }
 
-    fn part1(intcode: Self::Generated) -> Self::Output {
-        let mut position = SignedCoordinate { x: 0, y: 0 };
-        let mut direction = Direction::Up;
-        let mut grid = HashMap::<SignedCoordinate, IntCodeCell>::new();
-        let (input_send, input_recv) = unbounded();
-        let (output_send, output_recv) = unbounded();
+    fn part1(bot: Self::Generated) -> Self::Output {
+        bot(0).len()
+    }
 
-        let thread = std::thread::spawn(|| intcode.run_multi_threaded(input_recv, output_send));
+    fn part2(bot: Self::Generated) -> Self::Output {
+        let grid = bot(1);
 
-        let _: Result<_, Box<dyn std::error::Error>> = try {
-            loop {
-                input_send.send(*grid.get(&position).unwrap_or(&0))?;
-                grid.insert(position, output_recv.recv()?);
-                let turn = output_recv.recv()?;
+        let (mut minx, mut maxx, mut miny, mut maxy) = (0, 0, 0, 0);
 
-                if turn == 0 {
-                    direction = direction.turn_left();
-                } else {
-                    direction = direction.turn_right();
-                }
-
-                position += direction.to_unit();
+        for c in grid.keys() {
+            if c.x < minx {
+                minx = c.x;
             }
-        };
+            if c.x > maxx {
+                maxx = c.x;
+            }
+            if c.y < miny {
+                miny = c.y;
+            }
+            if c.y > maxy {
+                maxy = c.y;
+            }
+        }
 
-        thread.join().unwrap();
-        grid.len()
-    }
+        println!();
+        for y in (miny..=maxy).rev() {
+            for x in minx..=maxx {
+                print!(
+                    "{}",
+                    match grid.get(&SignedCoordinate { x, y }).unwrap_or(&0) {
+                        0 => ' ',
+                        1 => '█',
+                        _ => unreachable!(),
+                    },
+                )
+            }
+            println!();
+        }
 
-    fn part2(intcode: Self::Generated) -> Self::Output {
         0
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<SignedCoordinate, IntCodeCell> {
+    let mut position = SignedCoordinate { x: 0, y: 0 };
+    let mut direction = Direction::Up;
+    let mut grid = HashMap::<SignedCoordinate, IntCodeCell>::new();
+    let (input_send, input_recv) = unbounded();
+    let (output_send, output_recv) = unbounded();
 
-    #[test]
-    fn d11p2() {}
+    grid.insert(position, start_value);
+
+    let thread = std::thread::spawn(|| intcode.run_multi_threaded(input_recv, output_send));
+
+    let _: Result<_, Box<dyn std::error::Error>> = try {
+        loop {
+            input_send.send(*grid.get(&position).unwrap_or(&0))?;
+            grid.insert(position, output_recv.recv()?);
+            let turn = output_recv.recv()?;
+
+            if turn == 0 {
+                direction = direction.turn_left();
+            } else {
+                direction = direction.turn_right();
+            }
+
+            position += direction.to_unit();
+        }
+    };
+
+    thread.join().unwrap();
+    grid
 }

@@ -1,5 +1,4 @@
 use crate::solver::Solver;
-use std::io::{stdout, Write};
 
 type Pixel = u8;
 type Layer = Vec<Vec<Pixel>>;
@@ -32,30 +31,26 @@ impl<'a> Solver<'a> for Day8 {
     fn part2(image: Self::Generated) -> Self::Output {
         let height = image[0].len();
         let width = image[0][0].len();
-        let stdout = stdout();
-        let mut out = stdout.lock();
-        writeln!(out).unwrap();
+        println!();
 
         for h in 0..height {
             for w in 0..width {
                 for layer in &image {
                     let pixel = layer[h][w];
                     if pixel != 2 {
-                        write!(
-                            out,
+                        print!(
                             "{}",
                             match pixel {
                                 0 => ' ',
                                 1 => '█',
                                 _ => unreachable!(),
                             }
-                        )
-                        .unwrap();
+                        );
                         break;
                     }
                 }
             }
-            writeln!(out).unwrap();
+            println!();
         }
         0
     }

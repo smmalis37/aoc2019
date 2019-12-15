@@ -1,5 +1,6 @@
 #![feature(slice_partition_dedup)]
 #![feature(try_blocks)]
+#![feature(type_alias_impl_trait)]
 
 mod coord_system;
 pub mod day1;
