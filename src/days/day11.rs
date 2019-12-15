@@ -6,20 +6,19 @@ use std::collections::HashMap;
 pub struct Day11 {}
 
 impl<'a> Solver<'a> for Day11 {
-    type Generated = impl FnOnce(IntCodeCell) -> HashMap<SignedCoordinate, IntCodeCell> + Clone;
+    type Generated = IntCode;
     type Output = usize;
 
     fn generator(input: &'a str) -> Self::Generated {
-        let intcode = input.parse().unwrap();
-        move |x| run_bot(intcode, x)
+        input.parse().unwrap()
     }
 
-    fn part1(bot: Self::Generated) -> Self::Output {
-        bot(0).len()
+    fn part1(intcode: Self::Generated) -> Self::Output {
+        run_bot(intcode, 0).len()
     }
 
-    fn part2(bot: Self::Generated) -> Self::Output {
-        let grid = bot(1);
+    fn part2(intcode: Self::Generated) -> Self::Output {
+        let grid = run_bot(intcode, 1);
 
         let (mut minx, mut maxx, mut miny, mut maxy) = (0, 0, 0, 0);
 

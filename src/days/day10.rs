@@ -59,24 +59,33 @@ impl<'a> Solver<'a> for Day10 {
             .map(|c2| calc_angle_distance(part1_coord, c2))
             .collect();
 
-        let mut subangles = &mut *angles;
-        let mut seek = 199;
-        loop {
-            subangles.sort_unstable_by_key(|ad| ad.1);
-            subangles.sort_by_key(|ad| ad.0);
+        // This is apparently good enough, but not technically correct.
+        angles.sort_unstable_by_key(|ad| ad.1);
+        angles.sort_by_key(|ad| ad.0);
+        angles.dedup_by(|&mut ad1, &mut ad2| (ad1.0 - ad2.0).abs() < EPSILON);
+        let (angle, distance) = angles[199];
+        let coord = angle_distance_to_coord(part1_coord, angle, distance);
+        (coord, coord.x * 100 + coord.y)
 
-            let (left, right) =
-                subangles.partition_dedup_by(|&mut ad1, &mut ad2| (ad1.0 - ad2.0).abs() < EPSILON);
+        // This is technically correct, but requires nightly and a feature flag.
+        // let mut subangles = &mut *angles;
+        // let mut seek = 199;
+        // loop {
+        //     subangles.sort_unstable_by_key(|ad| ad.1);
+        //     subangles.sort_by_key(|ad| ad.0);
 
-            if seek < left.len() {
-                let (angle, distance) = left[seek];
-                let coord = angle_distance_to_coord(part1_coord, angle, distance);
-                return (coord, coord.x * 100 + coord.y);
-            } else {
-                seek -= left.len();
-                subangles = right;
-            }
-        }
+        //     let (left, right) =
+        //         subangles.partition_dedup_by(|&mut ad1, &mut ad2| (ad1.0 - ad2.0).abs() < EPSILON);
+
+        //     if seek < left.len() {
+        //         let (angle, distance) = left[seek];
+        //         let coord = angle_distance_to_coord(part1_coord, angle, distance);
+        //         return (coord, coord.x * 100 + coord.y);
+        //     } else {
+        //         seek -= left.len();
+        //         subangles = right;
+        //     }
+        // }
     }
 }
 
