@@ -36,9 +36,7 @@ impl<'a> Solver<'a> for Day12 {
         input
             .lines()
             .map(|l| {
-                let mut sections = l
-                    .trim_matches(|c| c == '<' || c == '>')
-                    .split(|c| c == ',' || c == '=');
+                let mut sections = l.trim_matches(&['<', '>'][..]).split(&[',', '='][..]);
                 (Planet::new(
                     sections.nth(1).unwrap().parse().unwrap(),
                     sections.nth(1).unwrap().parse().unwrap(),
