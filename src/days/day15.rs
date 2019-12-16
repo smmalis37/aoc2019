@@ -9,7 +9,7 @@ type Coordinate = SignedCoordinate;
 
 impl<'a> Solver<'a> for Day15 {
     type Generated = IntCode;
-    type Output = u32;
+    type Output = i32;
 
     fn generator(input: &'a str) -> Self::Generated {
         input.parse().unwrap()
@@ -24,7 +24,7 @@ impl<'a> Solver<'a> for Day15 {
     }
 }
 
-fn run_bot(intcode: IntCode) -> (u32, u32) {
+fn run_bot(intcode: IntCode) -> (i32, i32) {
     let all_directions = vec![Up, Down, Left, Right];
 
     let mut position = Coordinate { x: 0, y: 0 };
