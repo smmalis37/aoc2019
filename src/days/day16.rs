@@ -25,36 +25,40 @@ impl<'a> Solver<'a> for Day16 {
 
     fn part2(mut data: Self::Generated) -> Self::Output {
         let offset = to_number(&data[0..7]) as usize;
+        assert!(offset > data.len() * 10000 / 2);
 
         data = std::iter::repeat(data.iter())
             .take(10000)
             .flatten()
+            .skip(offset)
             .copied()
             .collect();
 
-        assert!(offset < data.len());
-
         for _ in 0..100 {
-            data = run_phase(data);
+            for j in (0..data.len() - 1).rev() {
+                data[j] = (data[j] + data[j + 1]) % 10;
+            }
         }
 
-        to_number(&data[offset..offset + 8])
+        to_number(&data[..8])
     }
 }
 
 fn run_phase<'a>(input: <Day16 as Solver>::Generated) -> <Day16 as Solver<'a>>::Generated {
     let pattern = [0, 1, 0, -1];
 
-    (1..=input.len())
+    (0..input.len())
         .map(|i| {
             (input
                 .iter()
+                .skip(i)
                 .zip(
                     pattern
                         .iter()
-                        .flat_map(|&x| std::iter::repeat(x).take(i))
+                        .flat_map(|&x| std::iter::repeat(x).take(i + 1))
                         .cycle()
-                        .skip(1),
+                        .skip(1)
+                        .skip(i),
                 )
                 .map(|(x, y)| x * y)
                 .sum::<i32>()
