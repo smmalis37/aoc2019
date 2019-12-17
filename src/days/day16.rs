@@ -27,20 +27,17 @@ impl<'a> Solver<'a> for Day16 {
         let offset = to_number(&data[0..7]) as usize;
         assert!(offset > data.len() * 10000 / 2);
 
-        data = std::iter::repeat(data.iter())
-            .take(10000)
-            .flatten()
-            .skip(offset)
-            .copied()
-            .collect();
+        let new_len = 10000 * data.len() - offset;
+        data = data.into_iter().rev().cycle().take(new_len).collect();
 
         for _ in 0..100 {
-            for j in (0..data.len() - 1).rev() {
-                data[j] = (data[j] + data[j + 1]) % 10;
+            for j in 1..data.len() {
+                data[j] = (data[j] + data[j - 1]) % 10;
             }
         }
 
-        to_number(&data[..8])
+        data.reverse();
+        to_number(&data[0..8])
     }
 }
 
