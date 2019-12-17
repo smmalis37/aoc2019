@@ -29,8 +29,16 @@ impl<'a> Solver<'a> for Day17 {
         calculate_alignment(grid)
     }
 
-    fn part2(intcode: Self::Generated) -> Self::Output {
-        0
+    fn part2(mut intcode: Self::Generated) -> Self::Output {
+        intcode.replace_cell(0, 2);
+        let outputs = intcode.run_predetermined(
+            &"A,B,B,A,C,A,C,A,C,B\nR,6,R,6,R,8,L,10,L,4\nR,6,L,10,R,8\nL,4,L,12,R,6,L,10\nn\n"
+                .bytes()
+                .map(|x| x as i64)
+                .collect::<Vec<_>>(),
+        );
+
+        *outputs.last().unwrap() as usize
     }
 }
 
@@ -93,7 +101,4 @@ mod tests {
 ..#####...^..";
         assert_eq!(calculate_alignment(parse_grid(input.chars())), 76);
     }
-
-    #[test]
-    fn d17p2() {}
 }
