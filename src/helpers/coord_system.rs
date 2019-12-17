@@ -16,7 +16,7 @@ impl<T: AddAssign> AddAssign for Coordinate<T> {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub(crate) enum Direction {
     Up,
     Down,
