@@ -6,7 +6,7 @@ macro_rules! days {
     ( $( $d:expr ),* ) => {
         $(
             paste::expr! {
-                run::<[<day $d>]::[<Day $d>]>($d, include_str!(concat!("..\\..\\input\\2019\\day", $d, ".txt")));
+                run::<[<day $d>]::[<Day $d>]>($d, include_str!(concat!("../../input/2019/day", $d, ".txt")));
             }
         )*
     };
