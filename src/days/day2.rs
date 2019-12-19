@@ -1,4 +1,4 @@
-use crate::helpers::intcode::*;
+use crate::intcode::*;
 use crate::solver::Solver;
 
 pub struct Day2 {}

@@ -1,15 +1,16 @@
-use crate::helpers::coord_system::{Direction::*, *};
-use crate::helpers::intcode::*;
+use crate::coord_system::direction::*;
+use crate::coord_system::signed::*;
+use crate::intcode::*;
 use crate::solver::Solver;
 use std::collections::HashMap;
 
 pub struct Day15 {}
 
-type Coordinate = SignedCoordinate;
+type N = i32;
 
 impl<'a> Solver<'a> for Day15 {
     type Generated = IntCode;
-    type Output = i32;
+    type Output = N;
 
     fn generator(input: &'a str) -> Self::Generated {
         input.parse().unwrap()
@@ -24,18 +25,19 @@ impl<'a> Solver<'a> for Day15 {
     }
 }
 
-fn run_bot(intcode: IntCode) -> (i32, i32) {
+fn run_bot(intcode: IntCode) -> (N, N) {
+    use Direction::*;
     let all_directions = vec![Up, Down, Left, Right];
 
-    let mut position = Coordinate { x: 0, y: 0 };
+    let mut position = Point { x: 0, y: 0 };
     let mut objective_distance = 0;
     let mut max_distance = 0;
 
     let mut reset = false;
-    let mut origin = Coordinate { x: 0, y: 0 };
+    let mut origin = Point { x: 0, y: 0 };
     let mut distance = 0;
     let mut last_direction = Up;
-    let mut data = HashMap::<Coordinate, (Vec<Direction>, Direction)>::new();
+    let mut data = HashMap::new();
     data.insert(position, (all_directions.clone(), Up));
 
     let _ = intcode.run_demand_driven(|o| {
@@ -44,7 +46,7 @@ fn run_bot(intcode: IntCode) -> (i32, i32) {
             match result {
                 0 => (),
                 1 | 2 => {
-                    position += last_direction.to_unit();
+                    position.add_dir(last_direction);
                     distance += 1;
 
                     if result == 2 && !reset {
@@ -58,7 +60,7 @@ fn run_bot(intcode: IntCode) -> (i32, i32) {
                         reset = true;
                     } else {
                         max_distance = std::cmp::max(max_distance, distance);
-                        let go_back = opposite(last_direction);
+                        let go_back = last_direction.opposite();
                         let mut next_steps = all_directions.clone();
                         next_steps.remove((to_value(go_back) - 1) as usize);
                         data.entry(position).or_insert((next_steps, go_back));
@@ -87,19 +89,11 @@ fn run_bot(intcode: IntCode) -> (i32, i32) {
 }
 
 fn to_value(d: Direction) -> IntCodeCell {
+    use Direction::*;
     match d {
         Up => 1,
         Down => 2,
         Left => 3,
         Right => 4,
-    }
-}
-
-fn opposite(d: Direction) -> Direction {
-    match d {
-        Up => Down,
-        Down => Up,
-        Left => Right,
-        Right => Left,
     }
 }

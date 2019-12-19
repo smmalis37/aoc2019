@@ -3,10 +3,10 @@ use std::ops::RangeInclusive;
 
 pub struct Day4 {}
 
-type Num = u32;
+type N = u32;
 
 impl<'a> Solver<'a> for Day4 {
-    type Generated = RangeInclusive<Num>;
+    type Generated = RangeInclusive<N>;
     type Output = usize;
 
     fn generator(input: &'a str) -> Self::Generated {
@@ -24,7 +24,7 @@ impl<'a> Solver<'a> for Day4 {
 }
 
 #[inline(always)]
-fn is_valid(val: Num, part2: bool) -> bool {
+fn is_valid(val: N, part2: bool) -> bool {
     let digits = to_digits(val);
     let mut seen_valid_pair = false;
     let mut no_descent = true;
@@ -48,11 +48,13 @@ fn is_valid(val: Num, part2: bool) -> bool {
     seen_valid_pair && no_descent
 }
 
-fn to_digits(mut val: Num) -> [u8; 6] {
+type Digit = u8;
+
+fn to_digits(mut val: N) -> [Digit; 6] {
     let mut output = [0; 6];
 
     for indexish in 0..6 {
-        output[5 - indexish] = (val % 10) as u8;
+        output[5 - indexish] = (val % 10) as Digit;
         val /= 10;
     }
 

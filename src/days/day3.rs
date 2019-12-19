@@ -1,10 +1,10 @@
-use crate::helpers::coord_system::*;
+use crate::coord_system::direction::*;
+use crate::coord_system::signed::*;
 use crate::solver::Solver;
 use arrayvec::ArrayVec;
 use std::collections::HashMap;
 
 type Distance = u32;
-type Coordinate = SignedCoordinate;
 
 #[derive(Copy, Clone)]
 struct PathSegment {
@@ -15,7 +15,7 @@ struct PathSegment {
 pub struct Day3 {}
 
 impl<'a> Solver<'a> for Day3 {
-    type Generated = [HashMap<Coordinate, Distance>; 2];
+    type Generated = [HashMap<Point, Distance>; 2];
     type Output = Distance;
 
     fn generator(input: &'a str) -> Self::Generated {
@@ -49,18 +49,17 @@ impl<'a> Solver<'a> for Day3 {
     }
 }
 
-fn trace_wires(paths: ArrayVec<[Vec<PathSegment>; 2]>) -> [HashMap<Coordinate, Distance>; 2] {
-    let mut touched_coords_steps: [HashMap<Coordinate, Distance>; 2] =
+fn trace_wires(paths: ArrayVec<[Vec<PathSegment>; 2]>) -> [HashMap<Point, Distance>; 2] {
+    let mut touched_coords_steps: [HashMap<Point, Distance>; 2] =
         [make_hashmap(&paths[0]), make_hashmap(&paths[1])];
 
     for path_index in 0..2 {
-        let mut position = Coordinate { x: 0, y: 0 };
+        let mut position = Point { x: 0, y: 0 };
         let mut steps = 0;
         let coords_steps = &mut touched_coords_steps[path_index];
         for segment in &paths[path_index] {
-            let unit = segment.direction.to_unit();
             for _ in 0..segment.distance {
-                position += unit;
+                position.add_dir(segment.direction);
                 steps += 1;
                 coords_steps.entry(position).or_insert(steps);
             }
@@ -70,7 +69,7 @@ fn trace_wires(paths: ArrayVec<[Vec<PathSegment>; 2]>) -> [HashMap<Coordinate, D
     touched_coords_steps
 }
 
-fn make_hashmap(paths: &[PathSegment]) -> HashMap<Coordinate, Distance> {
+fn make_hashmap(paths: &[PathSegment]) -> HashMap<Point, Distance> {
     HashMap::with_capacity(paths.iter().map(|x| x.distance as usize).sum())
 }
 

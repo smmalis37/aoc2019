@@ -58,7 +58,7 @@ fn run_phase<'a>(input: <Day16 as Solver>::Generated) -> <Day16 as Solver<'a>>::
                         .skip(i),
                 )
                 .map(|(x, y)| x * y)
-                .sum::<i32>()
+                .sum::<N>()
                 % 10)
                 .abs()
         })

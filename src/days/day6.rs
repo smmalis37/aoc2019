@@ -5,9 +5,11 @@ use petgraph::Undirected;
 
 pub struct Day6 {}
 
+type N = u32;
+
 impl<'a> Solver<'a> for Day6 {
-    type Generated = GraphMap<&'a str, u32, Undirected>;
-    type Output = u32;
+    type Generated = GraphMap<&'a str, N, Undirected>;
+    type Output = N;
 
     fn generator(input: &'a str) -> Self::Generated {
         let mut graph = GraphMap::new();

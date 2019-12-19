@@ -14,7 +14,7 @@ macro_rules! days {
 
 fn main() {
     println!("AOC 2019");
-    days!(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
+    days!(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
 }
 
 fn run<'a, S: Solver<'a>>(day_number: u8, input: &'a str) {

@@ -1,4 +1,4 @@
-use crate::helpers::intcode::*;
+use crate::intcode::*;
 use crate::solver::Solver;
 use crossbeam::channel::unbounded;
 use permutohedron::Heap;
@@ -58,7 +58,7 @@ impl<'a> Solver<'a> for Day7 {
 
                 let (input_send, input_recv) = channels[index].clone();
                 input_send.send(*phase).unwrap();
-                let (output_send, _) = if index == 4 {
+                let (output_send, _) = if index == channels.len() - 1 {
                     channels[0].clone()
                 } else {
                     channels[index + 1].clone()

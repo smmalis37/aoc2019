@@ -1,16 +1,17 @@
-use crate::helpers::coord_system::*;
+use crate::coord_system::unsigned::*;
 use crate::solver::Solver;
 use noisy_float::prelude::*;
 use std::f32::consts::*;
 use std::f32::*;
 
-type Coordinate = UnsignedCoordinate;
+type F = f32;
+type R = R32;
 
 pub struct Day10 {}
 
 impl<'a> Solver<'a> for Day10 {
-    type Generated = Vec<Coordinate>;
-    type Output = (Coordinate, usize);
+    type Generated = Vec<Point>;
+    type Output = (Point, usize);
 
     fn generator(input: &'a str) -> Self::Generated {
         input
@@ -20,14 +21,14 @@ impl<'a> Solver<'a> for Day10 {
                 l.chars()
                     .enumerate()
                     .filter(|&(_, c)| c == '#')
-                    .map(move |(x, _)| Coordinate { x, y })
+                    .map(move |(x, _)| Point { x, y })
             })
             .collect()
     }
 
     fn part1(asteroid_coords: Self::Generated) -> Self::Output {
         let mut max_visible = 0;
-        let mut max_coord = Coordinate { x: 0, y: 0 };
+        let mut max_coord = Point { x: 0, y: 0 };
 
         for &c in &asteroid_coords {
             let mut angles: Vec<_> = asteroid_coords
@@ -37,7 +38,7 @@ impl<'a> Solver<'a> for Day10 {
                 .collect();
 
             angles.sort_unstable();
-            angles.dedup_by(|&mut a1, &mut a2| (a1 - a2).abs() < EPSILON);
+            angles.dedup_by(|&mut x1, &mut x2| float_equals(x1, x2));
 
             let count = angles.len();
 
@@ -62,7 +63,7 @@ impl<'a> Solver<'a> for Day10 {
         // This is apparently good enough, but not technically correct.
         angles.sort_unstable_by_key(|ad| ad.1);
         angles.sort_by_key(|ad| ad.0);
-        angles.dedup_by(|&mut ad1, &mut ad2| (ad1.0 - ad2.0).abs() < EPSILON);
+        angles.dedup_by(|&mut ad1, &mut ad2| float_equals(ad1.0, ad2.0));
         let (angle, distance) = angles[199];
         let coord = angle_distance_to_coord(part1_coord, angle, distance);
         (coord, coord.x * 100 + coord.y)
@@ -75,7 +76,7 @@ impl<'a> Solver<'a> for Day10 {
         //     subangles.sort_by_key(|ad| ad.0);
 
         //     let (left, right) =
-        //         subangles.partition_dedup_by(|&mut ad1, &mut ad2| (ad1.0 - ad2.0).abs() < EPSILON);
+        //         subangles.partition_dedup_by(|&mut ad1, &mut ad2| float_equals(ad1.0, ad2.0));
 
         //     if seek < left.len() {
         //         let (angle, distance) = left[seek];
@@ -89,20 +90,20 @@ impl<'a> Solver<'a> for Day10 {
     }
 }
 
-fn angle_distance_to_coord(origin: Coordinate, angle: R32, distance: R32) -> Coordinate {
+fn angle_distance_to_coord(origin: Point, angle: R, distance: R) -> Point {
     let (x_unit, y_unit) = angle.sin_cos();
     let y_unit = -y_unit;
-    let x = ((x_unit * distance) + origin.x as f32).round().raw() as usize;
-    let y = ((y_unit * distance) + origin.y as f32).round().raw() as usize;
-    Coordinate { x, y }
+    let x = ((x_unit * distance) + origin.x as F).round().raw() as Coordinate;
+    let y = ((y_unit * distance) + origin.y as F).round().raw() as Coordinate;
+    Point { x, y }
 }
 
-fn calc_angle_distance(c1: Coordinate, c2: Coordinate) -> (R32, R32) {
+fn calc_angle_distance(c1: Point, c2: Point) -> (R, R) {
     let (x, y, x2, y2) = (
-        R32::new(c1.x as f32),
-        R32::new(c1.y as f32),
-        R32::new(c2.x as f32),
-        R32::new(c2.y as f32),
+        R::new(c1.x as F),
+        R::new(c1.y as F),
+        R::new(c2.x as F),
+        R::new(c2.y as F),
     );
 
     let xdiff = x2 - x;
@@ -115,17 +116,18 @@ fn calc_angle_distance(c1: Coordinate, c2: Coordinate) -> (R32, R32) {
     (angle, distance)
 }
 
+fn float_equals(x1: R, x2: R) -> bool {
+    (x1 - x2).abs() < EPSILON
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_angle_distance() {
-        fn test(c1: (usize, usize), c2: (usize, usize), exp: (f32, f32)) {
-            let res = calc_angle_distance(
-                Coordinate { x: c1.0, y: c1.1 },
-                Coordinate { x: c2.0, y: c2.1 },
-            );
+        fn test(c1: (Coordinate, Coordinate), c2: (Coordinate, Coordinate), exp: (F, F)) {
+            let res = calc_angle_distance(Point { x: c1.0, y: c1.1 }, Point { x: c2.0, y: c2.1 });
             assert_eq!((res.0.raw(), res.1.raw()), exp);
         }
 
@@ -142,13 +144,10 @@ mod tests {
 
     #[test]
     fn test_angle_distance_to_coord() {
-        fn test(c1: (usize, usize), ad: (f32, f32), exp: (usize, usize)) {
-            let res = angle_distance_to_coord(
-                Coordinate { x: c1.0, y: c1.1 },
-                R32::new(ad.0),
-                R32::new(ad.1),
-            );
-            assert_eq!(res, Coordinate { x: exp.0, y: exp.1 });
+        fn test(c1: (Coordinate, Coordinate), ad: (F, F), exp: (Coordinate, Coordinate)) {
+            let res =
+                angle_distance_to_coord(Point { x: c1.0, y: c1.1 }, R::new(ad.0), R::new(ad.1));
+            assert_eq!(res, Point { x: exp.0, y: exp.1 });
         }
 
         let sqrt2 = 2.0.sqrt();
@@ -172,7 +171,7 @@ mod tests {
 ....#
 ...##"
             )),
-            (Coordinate { x: 3, y: 4 }, 8)
+            (Point { x: 3, y: 4 }, 8)
         );
 
         assert_eq!(
@@ -188,7 +187,7 @@ mod tests {
 ##...#..#.
 .#....####"
             )),
-            (Coordinate { x: 5, y: 8 }, 33)
+            (Point { x: 5, y: 8 }, 33)
         );
 
         assert_eq!(
@@ -204,7 +203,7 @@ mod tests {
 ......#...
 .####.###."
             )),
-            (Coordinate { x: 1, y: 2 }, 35)
+            (Point { x: 1, y: 2 }, 35)
         );
 
         assert_eq!(
@@ -220,7 +219,7 @@ mod tests {
 .##...##.#
 .....#.#.."
             )),
-            (Coordinate { x: 6, y: 3 }, 41)
+            (Point { x: 6, y: 3 }, 41)
         );
 
         assert_eq!(
@@ -246,7 +245,7 @@ mod tests {
 #.#.#.#####.####.###
 ###.##.####.##.#..##"
             )),
-            (Coordinate { x: 11, y: 13 }, 210)
+            (Point { x: 11, y: 13 }, 210)
         );
     }
 
@@ -275,7 +274,7 @@ mod tests {
 #.#.#.#####.####.###
 ###.##.####.##.#..##"
             )),
-            (Coordinate { x: 8, y: 2 }, 802)
+            (Point { x: 8, y: 2 }, 802)
         );
     }
 }

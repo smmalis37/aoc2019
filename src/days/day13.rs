@@ -1,4 +1,4 @@
-use crate::helpers::intcode::*;
+use crate::intcode::*;
 use crate::solver::Solver;
 use std::cmp::Ordering;
 
@@ -6,7 +6,7 @@ pub struct Day13 {}
 
 impl<'a> Solver<'a> for Day13 {
     type Generated = IntCode;
-    type Output = usize;
+    type Output = IntCodeCell;
 
     fn generator(input: &'a str) -> Self::Generated {
         input.parse().unwrap()
@@ -14,7 +14,7 @@ impl<'a> Solver<'a> for Day13 {
 
     fn part1(intcode: Self::Generated) -> Self::Output {
         let outputs = intcode.run_predetermined(&[]);
-        outputs.chunks(3).filter(|&x| x[2] == 2).count()
+        outputs.chunks(3).filter(|&x| x[2] == 2).count() as IntCodeCell
     }
 
     fn part2(mut intcode: Self::Generated) -> Self::Output {
@@ -58,6 +58,6 @@ impl<'a> Solver<'a> for Day13 {
             }
         }
 
-        score as usize
+        score
     }
 }

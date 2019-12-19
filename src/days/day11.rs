@@ -1,5 +1,6 @@
-use crate::helpers::coord_system::*;
-use crate::helpers::intcode::*;
+use crate::coord_system::direction::*;
+use crate::coord_system::signed::*;
+use crate::intcode::*;
 use crate::solver::Solver;
 use std::collections::HashMap;
 
@@ -42,7 +43,7 @@ impl<'a> Solver<'a> for Day11 {
             for x in minx..=maxx {
                 print!(
                     "{}",
-                    match grid.get(&SignedCoordinate { x, y }).unwrap_or(&0) {
+                    match grid.get(&Point { x, y }).unwrap_or(&0) {
                         0 => ' ',
                         1 => '█',
                         _ => unreachable!(),
@@ -56,8 +57,8 @@ impl<'a> Solver<'a> for Day11 {
     }
 }
 
-fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<SignedCoordinate, IntCodeCell> {
-    let mut position = SignedCoordinate { x: 0, y: 0 };
+fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<Point, IntCodeCell> {
+    let mut position = Point { x: 0, y: 0 };
     let mut direction = Direction::Up;
     let mut grid = HashMap::new();
 
@@ -73,7 +74,7 @@ fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<SignedCoordina
                 direction = direction.turn_right();
             }
 
-            position += direction.to_unit();
+            position.add_dir(direction);
         }
 
         *grid.get(&position).unwrap_or(&0)
