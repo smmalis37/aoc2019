@@ -1,7 +1,8 @@
 use super::unsigned::*;
 use std::ops::*;
 
-pub(crate) struct Grid<T>(Vec<Vec<T>>);
+#[derive(Clone)]
+pub struct Grid<T>(Vec<Vec<T>>);
 
 impl<T> Deref for Grid<T> {
     type Target = Vec<Vec<T>>;

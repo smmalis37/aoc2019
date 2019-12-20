@@ -1,5 +1,5 @@
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum Direction {
+pub enum Direction {
     Up,
     Down,
     Left,

@@ -6,8 +6,8 @@ use crate::solver::Solver;
 
 pub struct Day17 {}
 
-#[derive(Debug, PartialEq, Eq)]
-enum Cell {
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Cell {
     Empty,
     Scaffold,
     Robot(Direction),
@@ -23,26 +23,26 @@ use Cell::*;
 use PathSegment::*;
 
 impl<'a> Solver<'a> for Day17 {
-    type Generated = IntCode;
+    type Generated = (IntCode, Grid<Cell>, Point);
     type Output = usize;
 
     fn generator(input: &'a str) -> Self::Generated {
-        input.parse().unwrap()
-    }
+        let intcode = input.parse::<IntCode>().unwrap();
 
-    fn part1(intcode: Self::Generated) -> Self::Output {
-        let mut outputs = intcode.run_predetermined(&[]);
-        outputs.truncate(outputs.len() - 1);
-
-        let grid = parse_grid(outputs.iter().map(|&x| x as u8 as char)).0;
-        calculate_alignment(grid)
-    }
-
-    fn part2(mut intcode: Self::Generated) -> Self::Output {
         let mut outputs = intcode.clone().run_predetermined(&[]);
         outputs.truncate(outputs.len() - 1);
-
         let (grid, robot_pos) = parse_grid(outputs.iter().map(|&x| x as u8 as char));
+
+        (intcode, grid, robot_pos)
+    }
+
+    fn part1(stuff: Self::Generated) -> Self::Output {
+        calculate_alignment(stuff.1)
+    }
+
+    fn part2(stuff: Self::Generated) -> Self::Output {
+        let (mut intcode, grid, robot_pos) = stuff;
+
         let path = compute_path(grid, robot_pos);
         let format_path = format_path(path);
         let input = format_path
@@ -95,10 +95,10 @@ fn calculate_alignment(grid: Grid<Cell>) -> usize {
     for y in 1..grid.len() - 1 {
         for x in 1..grid[y].len() - 1 {
             let p = Point { x, y };
-            if ALL_DIRECTIONS
-                .iter()
-                .all(|&d| grid[p.add_dir(d).unwrap()] == Scaffold)
-                && grid[p] == Scaffold
+            if grid[p] == Scaffold
+                && ALL_DIRECTIONS
+                    .iter()
+                    .all(|&d| grid[p.add_dir(d).unwrap()] == Scaffold)
             {
                 result += y * x;
             }
@@ -118,8 +118,8 @@ fn compute_path(grid: Grid<Cell>, mut pos: Point) -> Vec<PathSegment> {
     let mut path = Vec::new();
 
     loop {
-        let check_turn = |x: fn(Direction) -> Direction| {
-            let new_pos = pos.add_dir(x(direction));
+        let check_turn = |turn: fn(Direction) -> Direction| {
+            let new_pos = pos.add_dir(turn(direction));
             if let Some(new_pos) = new_pos {
                 grid.in_bounds(new_pos) && grid[new_pos] == Scaffold
             } else {
