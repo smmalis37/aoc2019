@@ -74,7 +74,7 @@ fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<Point, IntCode
                 direction = direction.turn_right();
             }
 
-            position.add_dir(direction);
+            position = position.add_dir(direction);
         }
 
         *grid.get(&position).unwrap_or(&0)

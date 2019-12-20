@@ -27,7 +27,7 @@ impl<'a> Solver<'a> for Day15 {
 
 fn run_bot(intcode: IntCode) -> (N, N) {
     use Direction::*;
-    let all_directions = vec![Up, Down, Left, Right];
+    let all_directions: Vec<_> = ALL_DIRECTIONS[..].into();
 
     let mut position = Point { x: 0, y: 0 };
     let mut objective_distance = 0;
@@ -46,7 +46,7 @@ fn run_bot(intcode: IntCode) -> (N, N) {
             match result {
                 0 => (),
                 1 | 2 => {
-                    position.add_dir(last_direction);
+                    position = position.add_dir(last_direction);
                     distance += 1;
 
                     if result == 2 && !reset {

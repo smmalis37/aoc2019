@@ -8,6 +8,8 @@ pub(crate) enum Direction {
 
 use Direction::*;
 
+pub(crate) const ALL_DIRECTIONS: [Direction; 4] = [Up, Down, Left, Right];
+
 impl std::str::FromStr for Direction {
     type Err = ();
 

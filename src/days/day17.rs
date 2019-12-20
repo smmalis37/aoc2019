@@ -1,22 +1,30 @@
 use crate::coord_system::direction::*;
+use crate::coord_system::grid::*;
 use crate::coord_system::unsigned::*;
 use crate::intcode::*;
 use crate::solver::Solver;
 
 pub struct Day17 {}
 
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 enum Cell {
     Empty,
     Scaffold,
     Robot(Direction),
 }
 
+#[derive(Debug, PartialEq, Eq)]
+enum PathSegment {
+    Function(char),
+    Movement(Direction, usize),
+}
+
 use Cell::*;
+use PathSegment::*;
 
 impl<'a> Solver<'a> for Day17 {
     type Generated = IntCode;
-    type Output = IntCodeCell;
+    type Output = usize;
 
     fn generator(input: &'a str) -> Self::Generated {
         input.parse().unwrap()
@@ -35,19 +43,21 @@ impl<'a> Solver<'a> for Day17 {
         outputs.truncate(outputs.len() - 1);
 
         let (grid, robot_pos) = parse_grid(outputs.iter().map(|&x| x as u8 as char));
-        let path = compute_path(grid, robot_pos)
+        let path = compute_path(grid, robot_pos);
+        let format_path = format_path(path);
+        let input = format_path
             .chars()
             .map(|c| c as IntCodeCell)
             .collect::<Vec<_>>();
 
         intcode.replace_cell(0, 2);
-        let outputs = intcode.run_predetermined(&path);
-        *outputs.last().unwrap()
+        let outputs = intcode.run_predetermined(&input);
+        *outputs.last().unwrap() as usize
     }
 }
 
-fn parse_grid(outputs: impl IntoIterator<Item = char>) -> (Vec<Vec<Cell>>, Point) {
-    let mut grid = Vec::new();
+fn parse_grid(outputs: impl IntoIterator<Item = char>) -> (Grid<Cell>, Point) {
+    let mut grid = Grid::new();
     let mut row = Vec::new();
     let mut robot_pos = Point { x: 0, y: 0 };
 
@@ -79,14 +89,16 @@ fn parse_grid(outputs: impl IntoIterator<Item = char>) -> (Vec<Vec<Cell>>, Point
     (grid, robot_pos)
 }
 
-fn calculate_alignment<'a>(grid: Vec<Vec<Cell>>) -> <Day17 as Solver<'a>>::Output {
+fn calculate_alignment(grid: Grid<Cell>) -> usize {
     let mut result = 0;
 
     for y in 1..grid.len() - 1 {
         for x in 1..grid[y].len() - 1 {
-            if [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)]
+            let p = Point { x, y };
+            if ALL_DIRECTIONS
                 .iter()
-                .all(|&(ymod, xmod)| grid[y + ymod][x + xmod] == Scaffold)
+                .all(|&d| grid[p.add_dir(d).unwrap()] == Scaffold)
+                && grid[p] == Scaffold
             {
                 result += y * x;
             }
@@ -96,7 +108,7 @@ fn calculate_alignment<'a>(grid: Vec<Vec<Cell>>) -> <Day17 as Solver<'a>>::Outpu
     result
 }
 
-fn compute_path(grid: Vec<Vec<Cell>>, mut pos: Point) -> String {
+fn compute_path(grid: Grid<Cell>, mut pos: Point) -> Vec<PathSegment> {
     let mut direction = if let Robot(x) = grid[pos] {
         x
     } else {
@@ -107,9 +119,14 @@ fn compute_path(grid: Vec<Vec<Cell>>, mut pos: Point) -> String {
 
     loop {
         let check_turn = |x: fn(Direction) -> Direction| {
-            let new_pos = pos + x(direction).to_unit();
-            grid.in_bounds(new_pos) && grid[new_pos] == Scaffold
+            let new_pos = pos.add_dir(x(direction));
+            if let Some(new_pos) = new_pos {
+                grid.in_bounds(new_pos) && grid[new_pos] == Scaffold
+            } else {
+                false
+            }
         };
+
         let turn = if check_turn(|d| d.turn_left()) {
             (direction.turn_left(), Direction::Left)
         } else if check_turn(|d| d.turn_right()) {
@@ -118,25 +135,99 @@ fn compute_path(grid: Vec<Vec<Cell>>, mut pos: Point) -> String {
             break;
         };
 
-        println!("{:?}", turn);
         direction = turn.0;
 
         let mut distance = 0;
-        while grid.in_bounds(pos + direction.to_unit())
-            && grid[pos + direction.to_unit()] == Scaffold
-        {
-            pos.add_dir(direction);
+        while {
+            let new_pos = pos.add_dir(direction);
+            new_pos.is_some()
+                && grid.in_bounds(new_pos.unwrap())
+                && grid[new_pos.unwrap()] == Scaffold
+        } {
+            pos = pos.add_dir(direction).unwrap();
             distance += 1;
         }
 
-        println!("{} {:?}", distance, pos);
-
-        path.push((turn.1, distance));
+        path.push(Movement(turn.1, distance));
     }
 
-    println!("{:?}", path);
+    path
+}
 
-    String::new()
+fn format_path(mut path: Vec<PathSegment>) -> String {
+    let mut output = String::new();
+
+    for function in &['A', 'B', 'C'] {
+        let (indexes, pattern_length) = longest(&path);
+
+        for m in &path[indexes[0]..indexes[0] + pattern_length] {
+            if let Movement(dir, dis) = m {
+                output.push_str(&format!(
+                    "{},{},",
+                    match dir {
+                        Direction::Left => 'L',
+                        Direction::Right => 'R',
+                        _ => unreachable!(),
+                    },
+                    dis
+                ))
+            } else {
+                unreachable!()
+            }
+        }
+
+        output.replace_range(output.len() - 1.., "\n");
+
+        for i in indexes.into_iter().rev() {
+            path[i] = Function(*function);
+            path.drain(i + 1..i + pattern_length);
+        }
+    }
+    output.push_str("n\n");
+
+    output.insert(0, '\n');
+    for f in path.into_iter().rev() {
+        if let Function(c) = f {
+            output.insert(0, c);
+            output.insert(0, ',');
+        } else {
+            unreachable!();
+        }
+    }
+    output.remove(0);
+    output
+}
+
+fn longest(path: &[PathSegment]) -> (Vec<usize>, usize) {
+    let mut length = 0;
+    let mut indexes = vec![];
+
+    for i in 0..path.len() {
+        for j in i + 2..std::cmp::min(path.len(), i + 2 + 4) {
+            let pattern = &path[i..j];
+            if pattern.len() > length
+                && pattern
+                    .iter()
+                    .all(|x| if let Movement(_, _) = x { true } else { false })
+            {
+                let mut instances = vec![i];
+                let mut range_check = j..=path.len() - pattern.len();
+                while let Some(k) = range_check.next() {
+                    if pattern.iter().zip(&path[k..]).all(|(x, y)| x == y) {
+                        instances.push(k);
+                        range_check.nth(pattern.len() - 1);
+                    }
+                }
+
+                if instances.len() > 1 {
+                    indexes = instances;
+                    length = pattern.len();
+                }
+            }
+        }
+    }
+
+    (indexes, length)
 }
 
 #[cfg(test)]
@@ -151,7 +242,8 @@ mod tests {
 #.#...#...#.#
 #############
 ..#...#...#..
-..#####...^..";
+..#####...^..
+";
         assert_eq!(calculate_alignment(parse_grid(input.chars()).0), 76);
     }
 
@@ -171,11 +263,30 @@ mod tests {
 ....#...#......
 ....#...#......
 ....#...#......
-....#####......";
+....#####......
+";
         let (grid, robot_pos) = parse_grid(input.chars());
+        let path = compute_path(grid, robot_pos);
         assert_eq!(
-            compute_path(grid, robot_pos),
-            "A,B,C,B,A,C\nR,8,R,8\nR,4,R,4,R,8\nL,6,L,2\nn\n"
+            path,
+            &[
+                Movement(Direction::Right, 8),
+                Movement(Direction::Right, 8),
+                Movement(Direction::Right, 4),
+                Movement(Direction::Right, 4),
+                Movement(Direction::Right, 8),
+                Movement(Direction::Left, 6),
+                Movement(Direction::Left, 2),
+                Movement(Direction::Right, 4),
+                Movement(Direction::Right, 4),
+                Movement(Direction::Right, 8),
+                Movement(Direction::Right, 8),
+                Movement(Direction::Right, 8),
+                Movement(Direction::Left, 6),
+                Movement(Direction::Left, 2)
+            ]
         );
+
+        format_path(path);
     }
 }

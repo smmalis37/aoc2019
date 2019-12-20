@@ -59,7 +59,7 @@ fn trace_wires(paths: ArrayVec<[Vec<PathSegment>; 2]>) -> [HashMap<Point, Distan
         let coords_steps = &mut touched_coords_steps[path_index];
         for segment in &paths[path_index] {
             for _ in 0..segment.distance {
-                position.add_dir(segment.direction);
+                position = position.add_dir(segment.direction);
                 steps += 1;
                 coords_steps.entry(position).or_insert(steps);
             }

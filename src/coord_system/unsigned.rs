@@ -27,13 +27,15 @@ impl AddAssign for Point {
 }
 
 impl Point {
-    pub(crate) fn add_dir(&mut self, d: Direction) {
+    #[must_use]
+    pub(crate) fn add_dir(mut self, d: Direction) -> Option<Self> {
         use Direction::*;
         match d {
-            Up => self.y -= 1,
+            Up => self.y = self.y.checked_sub(1)?,
             Down => self.y += 1,
-            Left => self.x -= 1,
+            Left => self.x = self.x.checked_sub(1)?,
             Right => self.x += 1,
-        }
+        };
+        Some(self)
     }
 }
