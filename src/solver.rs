@@ -1,6 +1,9 @@
+use std::cmp::PartialEq;
+use std::fmt::Debug;
+
 pub trait Solver<'a> {
     type Generated: Clone;
-    type Output: std::fmt::Debug;
+    type Output: Debug + PartialEq;
 
     fn generator(input: &'a str) -> Self::Generated;
     fn part1(data: Self::Generated) -> Self::Output;

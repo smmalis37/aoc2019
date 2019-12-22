@@ -11,7 +11,7 @@ pub struct Day10 {}
 
 impl<'a> Solver<'a> for Day10 {
     type Generated = Vec<Point>;
-    type Output = (Point, usize);
+    type Output = usize;
 
     fn generator(input: &'a str) -> Self::Generated {
         input
@@ -27,67 +27,78 @@ impl<'a> Solver<'a> for Day10 {
     }
 
     fn part1(asteroid_coords: Self::Generated) -> Self::Output {
-        let mut max_visible = 0;
-        let mut max_coord = Point { x: 0, y: 0 };
-
-        for &c in &asteroid_coords {
-            let mut angles: Vec<_> = asteroid_coords
-                .iter()
-                .filter(|&&c2| c != c2)
-                .map(|&c2| calc_angle_distance(c, c2).0)
-                .collect();
-
-            angles.sort_unstable();
-            angles.dedup_by(|&mut x1, &mut x2| float_equals(x1, x2));
-
-            let count = angles.len();
-
-            if count > max_visible {
-                max_visible = count;
-                max_coord = c;
-            }
-        }
-
-        (max_coord, max_visible)
+        find_best_coord(&asteroid_coords).1
     }
 
     fn part2(asteroid_coords: Self::Generated) -> Self::Output {
-        let part1_coord = Self::part1(asteroid_coords.clone()).0;
+        let coord = find_destroyed_position(&asteroid_coords, 200);
+        coord.x * 100 + coord.y
+    }
+}
 
+fn find_best_coord(asteroid_coords: &<Day10 as Solver>::Generated) -> (Point, usize) {
+    let mut max_visible = 0;
+    let mut max_coord = Point { x: 0, y: 0 };
+
+    for &c in asteroid_coords {
         let mut angles: Vec<_> = asteroid_coords
-            .into_iter()
-            .filter(|&c| c != part1_coord)
-            .map(|c2| calc_angle_distance(part1_coord, c2))
+            .iter()
+            .filter(|&&c2| c != c2)
+            .map(|&c2| calc_angle_distance(c, c2).0)
             .collect();
 
-        // This is apparently good enough, but not technically correct.
-        angles.sort_unstable_by_key(|ad| ad.1);
-        angles.sort_by_key(|ad| ad.0);
-        angles.dedup_by(|&mut ad1, &mut ad2| float_equals(ad1.0, ad2.0));
-        let (angle, distance) = angles[199];
-        let coord = angle_distance_to_coord(part1_coord, angle, distance);
-        (coord, coord.x * 100 + coord.y)
+        angles.sort_unstable();
+        angles.dedup_by(|&mut x1, &mut x2| float_equals(x1, x2));
 
-        // This is technically correct, but requires nightly and a feature flag.
-        // let mut subangles = &mut *angles;
-        // let mut seek = 199;
-        // loop {
-        //     subangles.sort_unstable_by_key(|ad| ad.1);
-        //     subangles.sort_by_key(|ad| ad.0);
+        let count = angles.len();
 
-        //     let (left, right) =
-        //         subangles.partition_dedup_by(|&mut ad1, &mut ad2| float_equals(ad1.0, ad2.0));
-
-        //     if seek < left.len() {
-        //         let (angle, distance) = left[seek];
-        //         let coord = angle_distance_to_coord(part1_coord, angle, distance);
-        //         return (coord, coord.x * 100 + coord.y);
-        //     } else {
-        //         seek -= left.len();
-        //         subangles = right;
-        //     }
-        // }
+        if count > max_visible {
+            max_visible = count;
+            max_coord = c;
+        }
     }
+
+    (max_coord, max_visible)
+}
+
+fn find_destroyed_position(
+    asteroid_coords: &<Day10 as Solver>::Generated,
+    position: usize,
+) -> Point {
+    let part1_coord = find_best_coord(&asteroid_coords).0;
+
+    let mut angles: Vec<_> = asteroid_coords
+        .iter()
+        .filter(|&&c| c != part1_coord)
+        .map(|&c2| calc_angle_distance(part1_coord, c2))
+        .collect();
+
+    // This is apparently good enough, but not technically correct.
+    angles.sort_unstable_by_key(|ad| ad.1);
+    angles.sort_by_key(|ad| ad.0);
+    angles.dedup_by(|&mut ad1, &mut ad2| float_equals(ad1.0, ad2.0));
+    let (angle, distance) = angles[position - 1];
+    angle_distance_to_coord(part1_coord, angle, distance)
+
+    // This is fully correct, but requires nightly and a feature flag.
+    // let mut subangles = &mut *angles;
+    // let mut seek = position - 1;
+    // loop {
+    //     subangles.sort_unstable_by_key(|ad| ad.1);
+    //     subangles.sort_by_key(|ad| ad.0);
+
+    //     let (left, right) =
+    //         subangles.partition_dedup_by(|&mut ad1, &mut ad2| float_equals(ad1.0, ad2.0));
+
+    //     if seek < left.len() {
+    //         let (angle, distance) = left[seek];
+    //         let coord = angle_distance_to_coord(part1_coord, angle, distance);
+    //         return (coord, coord.x * 100 + coord.y);
+    //     } else {
+    //         seek -= left.len();
+    //         subangles = right;
+    //     }
+    // }
 }
 
 fn angle_distance_to_coord(origin: Point, angle: R, distance: R) -> Point {
@@ -164,7 +175,7 @@ mod tests {
     #[test]
     fn d10p1() {
         assert_eq!(
-            Day10::part1(Day10::generator(
+            find_best_coord(&Day10::generator(
                 ".#..#
 .....
 #####
@@ -175,7 +186,7 @@ mod tests {
         );
 
         assert_eq!(
-            Day10::part1(Day10::generator(
+            find_best_coord(&Day10::generator(
                 "......#.#.
 #..#.#....
 ..#######.
@@ -191,7 +202,7 @@ mod tests {
         );
 
         assert_eq!(
-            Day10::part1(Day10::generator(
+            find_best_coord(&Day10::generator(
                 "#.#...#.#.
 .###....#.
 .#....#...
@@ -207,7 +218,7 @@ mod tests {
         );
 
         assert_eq!(
-            Day10::part1(Day10::generator(
+            find_best_coord(&Day10::generator(
                 ".#..#..###
 ####.###.#
 ....###.#.
@@ -223,7 +234,7 @@ mod tests {
         );
 
         assert_eq!(
-            Day10::part1(Day10::generator(
+            find_best_coord(&Day10::generator(
                 ".#..##.###...#######
 ##.############..##.
 .#.######.########.#
@@ -251,9 +262,8 @@ mod tests {
 
     #[test]
     fn d10p2() {
-        assert_eq!(
-            Day10::part2(Day10::generator(
-                ".#..##.###...#######
+        let asteroids = Day10::generator(
+            ".#..##.###...#######
 ##.############..##.
 .#.######.########.#
 .###.#######.####.#.
@@ -272,9 +282,53 @@ mod tests {
 ....##.##.###..#####
 .#.#.###########.###
 #.#.#.#####.####.###
-###.##.####.##.#..##"
-            )),
-            (Point { x: 8, y: 2 }, 802)
+###.##.####.##.#..##",
         );
+
+        assert_eq!(
+            find_destroyed_position(&asteroids, 1),
+            Point { x: 11, y: 12 }
+        );
+        assert_eq!(
+            find_destroyed_position(&asteroids, 2),
+            Point { x: 12, y: 1 }
+        );
+        assert_eq!(
+            find_destroyed_position(&asteroids, 3),
+            Point { x: 12, y: 2 }
+        );
+        assert_eq!(
+            find_destroyed_position(&asteroids, 10),
+            Point { x: 12, y: 8 }
+        );
+        assert_eq!(
+            find_destroyed_position(&asteroids, 20),
+            Point { x: 16, y: 0 }
+        );
+        assert_eq!(
+            find_destroyed_position(&asteroids, 50),
+            Point { x: 16, y: 9 }
+        );
+        assert_eq!(
+            find_destroyed_position(&asteroids, 100),
+            Point { x: 10, y: 16 }
+        );
+        assert_eq!(
+            find_destroyed_position(&asteroids, 199),
+            Point { x: 9, y: 6 }
+        );
+        assert_eq!(
+            find_destroyed_position(&asteroids, 200),
+            Point { x: 8, y: 2 }
+        );
+        assert_eq!(
+            find_destroyed_position(&asteroids, 201),
+            Point { x: 10, y: 9 }
+        );
+        // Requires the fully functional, nightly-only solution.
+        // assert_eq!(
+        //     find_destroyed_position(&asteroids, 299),
+        //     Point { x: 11, y: 1 }
+        // );
     }
 }
