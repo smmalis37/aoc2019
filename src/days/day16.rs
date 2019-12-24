@@ -36,8 +36,7 @@ impl<'a> Solver<'a> for Day16 {
             }
         }
 
-        data.reverse();
-        to_number(&data[0..8])
+        to_number(data.iter().rev().take(8))
     }
 }
 
@@ -65,8 +64,8 @@ fn run_phase<'a>(input: <Day16 as Solver>::Generated) -> <Day16 as Solver<'a>>::
         .collect()
 }
 
-fn to_number(x: &[N]) -> N {
-    x.iter().fold(0, |b, v| b * 10 + v)
+fn to_number<'a>(x: impl IntoIterator<Item = &'a N>) -> N {
+    x.into_iter().fold(0, |b, v| b * 10 + v)
 }
 
 #[cfg(test)]
