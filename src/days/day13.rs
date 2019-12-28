@@ -20,43 +20,36 @@ impl<'a> Solver<'a> for Day13 {
     fn part2(mut intcode: Self::Generated) -> Self::Output {
         intcode.replace_cell(0, 2);
         let mut score = 0;
-        let mut paddle_x = None;
+        let mut previous_outputs = [None, None];
 
-        let final_outputs = intcode.run_demand_driven(|outputs| {
-            let mut ball_x = None;
+        intcode.run_demand_driven(
+            (0, 0),
+            |(paddle_x, ball_x), o| {
+                if let Some(x) = previous_outputs[0] {
+                    if let Some(y) = previous_outputs[1] {
+                        let tile = o;
 
-            for o in outputs.chunks(3) {
-                let x = o[0];
-                let y = o[1];
-                let tile = o[2];
-
-                if x == -1 && y == 0 {
-                    score = tile;
-                } else if tile == 3 {
-                    paddle_x = Some(x);
-                } else if tile == 4 {
-                    ball_x = Some(x);
+                        if x == -1 && y == 0 {
+                            score = tile;
+                        } else if tile == 3 {
+                            *paddle_x = x;
+                        } else if tile == 4 {
+                            *ball_x = x;
+                        }
+                        previous_outputs = [None, None];
+                    } else {
+                        previous_outputs[1] = Some(o);
+                    }
+                } else {
+                    previous_outputs[0] = Some(o);
                 }
-            }
-
-            let action = match paddle_x.unwrap().cmp(&ball_x.unwrap()) {
+            },
+            |(paddle_x, ball_x)| match paddle_x.cmp(&ball_x) {
                 Ordering::Less => 1,
                 Ordering::Equal => 0,
                 Ordering::Greater => -1,
-            };
-
-            if action != 0 {
-                paddle_x = None;
-            }
-
-            action
-        });
-
-        for o in final_outputs.chunks(3) {
-            if o[0] == -1 && o[1] == 0 {
-                score = o[2];
-            }
-        }
+            },
+        );
 
         score
     }

@@ -58,27 +58,33 @@ impl<'a> Solver<'a> for Day11 {
 }
 
 fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<Point, IntCodeCell> {
-    let mut position = Point { x: 0, y: 0 };
+    let position = Point { x: 0, y: 0 };
     let mut direction = Direction::Up;
     let mut grid = HashMap::new();
+    let mut previous_output = None;
 
     grid.insert(position, start_value);
 
-    let _ = intcode.run_demand_driven(|outputs| {
-        for o in outputs.chunks(2) {
-            grid.insert(position, o[0]);
+    intcode.run_demand_driven(
+        (&mut grid, position),
+        |(grid, position), o| {
+            if let Some(pos) = previous_output {
+                grid.insert(*position, pos);
 
-            if o[1] == 0 {
-                direction = direction.turn_left();
+                if o == 0 {
+                    direction = direction.turn_left();
+                } else {
+                    direction = direction.turn_right();
+                }
+
+                *position = position.add_dir(direction);
+                previous_output = None;
             } else {
-                direction = direction.turn_right();
+                previous_output = Some(o);
             }
-
-            position = position.add_dir(direction);
-        }
-
-        *grid.get(&position).unwrap_or(&0)
-    });
+        },
+        |(grid, position)| *grid.get(position).unwrap_or(&0),
+    );
 
     grid
 }

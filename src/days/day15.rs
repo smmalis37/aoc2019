@@ -29,61 +29,60 @@ fn run_bot(intcode: IntCode) -> (N, N) {
     use Direction::*;
     let all_directions: Vec<_> = ALL_DIRECTIONS[..].into();
 
-    let mut position = Point { x: 0, y: 0 };
+    let position = Point { x: 0, y: 0 };
     let mut objective_distance = 0;
     let mut max_distance = 0;
 
     let mut reset = false;
-    let mut origin = Point { x: 0, y: 0 };
-    let mut distance = 0;
-    let mut last_direction = Up;
+    let origin = Point { x: 0, y: 0 };
+    let distance = 0;
+    let last_direction = Up;
     let mut data = HashMap::new();
     data.insert(position, (all_directions.clone(), Up));
 
-    let _ = intcode.run_demand_driven(|o| {
-        if !o.is_empty() {
-            let result = o[0];
-            match result {
-                0 => (),
-                1 | 2 => {
-                    position = position.add_dir(last_direction);
-                    distance += 1;
+    intcode.run_demand_driven(
+        (data, position, origin, distance, last_direction),
+        |(data, position, origin, distance, last_direction), o| match o {
+            0 => (),
+            1 | 2 => {
+                *position = position.add_dir(*last_direction);
+                *distance += 1;
 
-                    if result == 2 && !reset {
-                        objective_distance = distance;
+                if o == 2 && !reset {
+                    objective_distance = *distance;
 
-                        origin = position;
-                        distance = 0;
-                        data.clear();
-                        data.insert(position, (all_directions.clone(), Up));
-                        max_distance = 0;
-                        reset = true;
-                    } else {
-                        max_distance = std::cmp::max(max_distance, distance);
-                        let go_back = last_direction.opposite();
-                        let mut next_steps = all_directions.clone();
-                        next_steps.remove((to_value(go_back) - 1) as usize);
-                        data.entry(position).or_insert((next_steps, go_back));
-                    }
+                    *origin = *position;
+                    *distance = 0;
+                    data.clear();
+                    data.insert(*position, (all_directions.clone(), Up));
+                    max_distance = 0;
+                    reset = true;
+                } else {
+                    max_distance = std::cmp::max(max_distance, *distance);
+                    let go_back = last_direction.opposite();
+                    let mut next_steps = all_directions.clone();
+                    next_steps.remove((to_value(go_back) - 1) as usize);
+                    data.entry(*position).or_insert((next_steps, go_back));
                 }
-                _ => unreachable!(),
             }
-        }
-
-        let coord_data = data.get_mut(&position).unwrap();
-        if coord_data.0.is_empty() {
-            if position == origin {
-                99
+            _ => unreachable!(),
+        },
+        |(data, position, origin, distance, last_direction)| {
+            let coord_data = data.get_mut(position).unwrap();
+            if coord_data.0.is_empty() {
+                if position == origin {
+                    99
+                } else {
+                    *distance -= 2;
+                    *last_direction = coord_data.1;
+                    to_value(coord_data.1)
+                }
             } else {
-                distance -= 2;
-                last_direction = coord_data.1;
-                to_value(coord_data.1)
+                *last_direction = coord_data.0.pop().unwrap();
+                to_value(*last_direction)
             }
-        } else {
-            last_direction = coord_data.0.pop().unwrap();
-            to_value(last_direction)
-        }
-    });
+        },
+    );
 
     (objective_distance, max_distance)
 }

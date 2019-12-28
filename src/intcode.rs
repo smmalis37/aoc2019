@@ -34,23 +34,26 @@ impl IntCode {
         for &(index, value) in inputs {
             self.replace_cell(index, value);
         }
-        let _ = self.run(|_| unreachable!());
+        self.run((), |_| unreachable!(), |_, _| unreachable!());
         self.memory.starting_memory
     }
 
     #[must_use]
     pub(crate) fn run_predetermined(mut self, input: &[IntCodeCell]) -> Vec<IntCodeCell> {
         let mut inputs = input.iter();
+        let mut outputs = Vec::new();
 
-        self.run(|_| *inputs.next().unwrap())
+        self.run((), |_| *inputs.next().unwrap(), |_, o| outputs.push(o));
+        outputs
     }
 
-    #[must_use]
-    pub(crate) fn run_demand_driven(
+    pub(crate) fn run_demand_driven<SharedState>(
         mut self,
-        input: impl FnMut(&[IntCodeCell]) -> IntCodeCell,
-    ) -> Vec<IntCodeCell> {
-        self.run(input)
+        shared_state: SharedState,
+        output: impl FnMut(&mut SharedState, IntCodeCell),
+        input: impl FnMut(&mut SharedState) -> IntCodeCell,
+    ) {
+        self.run(shared_state, input, output)
     }
 
     pub(crate) fn run_multi_threaded(
@@ -58,21 +61,19 @@ impl IntCode {
         input: Receiver<IntCodeCell>,
         output: Sender<IntCodeCell>,
     ) {
-        let final_outputs = self.run(|o| {
-            o.iter().for_each(|&x| {
-                output.send(x).unwrap();
-            });
-            input.recv().unwrap()
-        });
-
-        final_outputs.into_iter().for_each(|x| {
-            output.send(x).unwrap();
-        });
+        self.run(
+            (),
+            |_| input.recv().unwrap(),
+            |_, o| output.send(o).unwrap(),
+        );
     }
 
-    #[must_use]
-    fn run(&mut self, mut input: impl FnMut(&[IntCodeCell]) -> IntCodeCell) -> Vec<IntCodeCell> {
-        let mut outputs = Vec::new();
+    fn run<SharedState>(
+        &mut self,
+        mut shared_state: SharedState,
+        mut input: impl FnMut(&mut SharedState) -> IntCodeCell,
+        mut output: impl FnMut(&mut SharedState, IntCodeCell),
+    ) {
         loop {
             let instr = Instruction::new(self.memory[self.pc]);
             match instr.opcode {
@@ -80,13 +81,12 @@ impl IntCode {
                 JumpIfTrue | JumpIfFalse => self.do_jump(instr),
 
                 Input => {
-                    *self.get_mut_memory(1, instr) = input(&outputs);
-                    outputs.clear();
+                    *self.get_mut_memory(1, instr) = input(&mut shared_state);
                     self.pc += 2;
                 }
 
                 Output => {
-                    outputs.push(self.get_parameter(1, instr));
+                    output(&mut shared_state, self.get_parameter(1, instr));
                     self.pc += 2;
                 }
 
@@ -98,8 +98,6 @@ impl IntCode {
                 Terminate => break,
             }
         }
-
-        outputs
     }
 
     fn do_math(&mut self, instr: Instruction) {
