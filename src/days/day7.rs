@@ -44,7 +44,7 @@ impl<'a> Solver<'a> for Day7 {
             unbounded(),
         ];
         let threads = rayon::ThreadPoolBuilder::new()
-            .num_threads(5)
+            .num_threads(phases.len())
             .build()
             .unwrap();
 
