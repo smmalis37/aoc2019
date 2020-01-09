@@ -43,7 +43,17 @@ mod tests {
     fn d6p1() {
         assert_eq!(
             Day6::part1(Day6::generator(
-                "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L"
+                "COM)B
+B)C
+C)D
+D)E
+E)F
+B)G
+G)H
+D)I
+E)J
+J)K
+K)L"
             )),
             42
         );
@@ -53,7 +63,19 @@ mod tests {
     fn d6p2() {
         assert_eq!(
             Day6::part2(Day6::generator(
-                "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L\nK)YOU\nI)SAN"
+                "COM)B
+B)C
+C)D
+D)E
+E)F
+B)G
+G)H
+D)I
+E)J
+J)K
+K)L
+K)YOU
+I)SAN"
             )),
             4
         );
