@@ -6,21 +6,19 @@ type Image = Vec<Layer>;
 
 pub struct Day8 {}
 
-impl<'a> Solver<'a> for Day8 {
+impl Solver<'_> for Day8 {
     type Generated = Image;
     type Output = usize;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         parse_image(input, 25, 6)
     }
 
     fn part1(image: Self::Generated) -> Self::Output {
         let layer = image
             .iter()
-            .map(|layer| (layer, layer.iter().flatten().filter(|&&x| x == 0).count()))
-            .min_by_key(|&(_, c)| c)
-            .unwrap()
-            .0;
+            .min_by_key(|layer| layer.iter().flatten().filter(|&&x| x == 0).count())
+            .unwrap();
 
         let one_count = layer.iter().flatten().filter(|&&x| x == 1).count();
         let two_count = layer.iter().flatten().filter(|&&x| x == 2).count();
@@ -31,39 +29,44 @@ impl<'a> Solver<'a> for Day8 {
     fn part2(image: Self::Generated) -> Self::Output {
         let height = image[0].len();
         let width = image[0][0].len();
-        println!();
+
+        use std::io::Write;
+        let stdout = std::io::stdout();
+        let mut writer = stdout.lock();
+        writeln!(writer).unwrap();
 
         for h in 0..height {
             for w in 0..width {
                 for layer in &image {
                     let pixel = layer[h][w];
                     if pixel != 2 {
-                        print!(
+                        write!(
+                            writer,
                             "{}",
                             match pixel {
                                 0 => ' ',
                                 1 => '█',
                                 _ => unreachable!(),
                             }
-                        );
+                        )
+                        .unwrap();
                         break;
                     }
                 }
             }
-            println!();
+            writeln!(writer).unwrap();
         }
+
         0
     }
 }
 
 fn parse_image(input: &str, width: usize, height: usize) -> Image {
-    let mut image = Image::new();
-    let mut digits = input
-        .chars()
-        .map(|x| x.to_digit(10).unwrap() as Pixel)
-        .peekable();
+    let layer_count = input.len() / width / height;
+    let mut image = Image::with_capacity(layer_count);
+    let mut digits = input.bytes().map(|x| x - b'0');
 
-    loop {
+    for _ in 0..layer_count {
         let mut layer = Layer::with_capacity(height);
         for _ in 0..height {
             let mut row = Vec::with_capacity(width);
@@ -73,10 +76,6 @@ fn parse_image(input: &str, width: usize, height: usize) -> Image {
             layer.push(row);
         }
         image.push(layer);
-
-        if digits.peek().is_none() {
-            break;
-        }
     }
 
     image

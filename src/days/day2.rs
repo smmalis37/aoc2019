@@ -3,11 +3,11 @@ use crate::solver::Solver;
 
 pub struct Day2 {}
 
-impl<'a> Solver<'a> for Day2 {
+impl Solver<'_> for Day2 {
     type Generated = IntCode;
     type Output = IntCodeCell;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         input.parse().unwrap()
     }
 
@@ -16,8 +16,8 @@ impl<'a> Solver<'a> for Day2 {
     }
 
     fn part2(start_intcode: Self::Generated) -> Self::Output {
-        for verb in 0..=99 {
-            for noun in 0..=99 {
+        for noun in 0..=99 {
+            for verb in 0..=99 {
                 let intcode = start_intcode.clone();
                 if intcode.run_no_io(&[(1, noun), (2, verb)])[0] == 19_690_720 {
                     return 100 * noun + verb;
@@ -40,6 +40,10 @@ mod tests {
             assert_eq!(finished_memory, expected_output);
         }
 
+        test(
+            "1,9,10,3,2,3,11,0,99,30,40,50",
+            &[3500, 9, 10, 70, 2, 3, 11, 0, 99, 30, 40, 50],
+        );
         test("1,0,0,0,99", &[2, 0, 0, 0, 99]);
         test("2,3,0,3,99", &[2, 3, 0, 6, 99]);
         test("2,4,4,5,99,0", &[2, 4, 4, 5, 99, 9801]);

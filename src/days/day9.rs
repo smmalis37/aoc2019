@@ -3,11 +3,11 @@ use crate::solver::Solver;
 
 pub struct Day9 {}
 
-impl<'a> Solver<'a> for Day9 {
+impl Solver<'_> for Day9 {
     type Generated = IntCode;
     type Output = IntCodeCell;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         input.parse().unwrap()
     }
 

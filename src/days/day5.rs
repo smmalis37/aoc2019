@@ -3,7 +3,7 @@ use crate::solver::Solver;
 
 pub struct Day5 {}
 
-impl<'a> Solver<'a> for Day5 {
+impl Solver<'_> for Day5 {
     type Generated = IntCode;
     type Output = IntCodeCell;
 

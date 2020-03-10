@@ -2,16 +2,16 @@ use crate::solver::Solver;
 
 pub struct Day16 {}
 
-type N = i32;
+type Num = i32;
 
-impl<'a> Solver<'a> for Day16 {
-    type Generated = Vec<N>;
-    type Output = N;
+impl Solver<'_> for Day16 {
+    type Generated = Vec<Num>;
+    type Output = Num;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         input
             .chars()
-            .map(|c| c.to_digit(10).unwrap() as N)
+            .map(|c| c.to_digit(10).unwrap() as Num)
             .collect()
     }
 
@@ -57,14 +57,14 @@ fn run_phase<'a>(input: <Day16 as Solver>::Generated) -> <Day16 as Solver<'a>>::
                         .skip(i),
                 )
                 .map(|(x, y)| x * y)
-                .sum::<N>()
+                .sum::<Num>()
                 % 10)
                 .abs()
         })
         .collect()
 }
 
-fn to_number<'a>(x: impl IntoIterator<Item = &'a N>) -> N {
+fn to_number<'a>(x: impl IntoIterator<Item = &'a Num>) -> Num {
     x.into_iter().fold(0, |b, v| b * 10 + v)
 }
 

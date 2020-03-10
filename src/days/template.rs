@@ -2,11 +2,11 @@ use crate::solver::Solver;
 
 pub struct DayNUM {}
 
-impl<'a> Solver<'a> for DayNUM {
+impl Solver<'_> for DayNUM {
     type Generated = u32;
     type Output = u32;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         0
     }
 

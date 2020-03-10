@@ -3,15 +3,18 @@ use std::ops::RangeInclusive;
 
 pub struct Day4 {}
 
-type N = u32;
+type Num = u32;
 
-impl<'a> Solver<'a> for Day4 {
-    type Generated = RangeInclusive<N>;
+impl Solver<'_> for Day4 {
+    type Generated = RangeInclusive<Num>;
     type Output = usize;
 
-    fn generator(input: &'a str) -> Self::Generated {
-        let mut inputs = input.split('-').map(|x| x.parse().unwrap());
-        RangeInclusive::new(inputs.next().unwrap(), inputs.next().unwrap())
+    fn generator(input: &str) -> Self::Generated {
+        let separator = input.find('-').unwrap();
+        RangeInclusive::new(
+            input[..separator].parse().unwrap(),
+            input[separator + 1..].parse().unwrap(),
+        )
     }
 
     fn part1(range: Self::Generated) -> Self::Output {
@@ -24,20 +27,20 @@ impl<'a> Solver<'a> for Day4 {
 }
 
 #[inline(always)]
-fn is_valid(val: N, part2: bool) -> bool {
+fn is_valid(val: Num, part2: bool) -> bool {
     let digits = to_digits(val);
     let mut seen_valid_pair = false;
     let mut no_descent = true;
 
-    for i in 0..digits.len() - 1 {
-        if digits[i + 1] < digits[i] {
+    for i in 1..digits.len() {
+        if digits[i - 1] > digits[i] {
             no_descent = false;
         }
 
-        if digits[i + 1] == digits[i] {
+        if digits[i - 1] == digits[i] {
             if part2
-                && ((i + 2 < digits.len() && digits[i + 2] == digits[i])
-                    || (i > 0 && digits[i - 1] == digits[i]))
+                && ((i + 1 < digits.len() && digits[i + 1] == digits[i])
+                    || (i > 1 && digits[i - 2] == digits[i]))
             {
             } else {
                 seen_valid_pair = true;
@@ -50,11 +53,11 @@ fn is_valid(val: N, part2: bool) -> bool {
 
 type Digit = u8;
 
-fn to_digits(mut val: N) -> [Digit; 6] {
+fn to_digits(mut val: Num) -> [Digit; 6] {
     let mut output = [0; 6];
 
-    for indexish in 0..6 {
-        output[5 - indexish] = (val % 10) as Digit;
+    for indexish in (0..6).rev() {
+        output[indexish] = (val % 10) as Digit;
         val /= 10;
     }
 

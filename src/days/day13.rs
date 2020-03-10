@@ -4,11 +4,11 @@ use std::cmp::Ordering;
 
 pub struct Day13 {}
 
-impl<'a> Solver<'a> for Day13 {
+impl Solver<'_> for Day13 {
     type Generated = IntCode;
     type Output = IntCodeCell;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         input.parse().unwrap()
     }
 

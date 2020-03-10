@@ -22,11 +22,11 @@ enum PathSegment {
 use Cell::*;
 use PathSegment::*;
 
-impl<'a> Solver<'a> for Day17 {
+impl Solver<'_> for Day17 {
     type Generated = (IntCode, Grid<Cell>, Point);
     type Output = usize;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         let intcode = input.parse::<IntCode>().unwrap();
 
         let mut outputs = intcode.clone().run_predetermined(&[]);

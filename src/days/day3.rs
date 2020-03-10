@@ -1,7 +1,6 @@
 use crate::coord_system::direction::*;
 use crate::coord_system::signed::*;
 use crate::solver::Solver;
-use arrayvec::ArrayVec;
 use std::collections::HashMap;
 
 type Distance = u32;
@@ -14,70 +13,67 @@ struct PathSegment {
 
 pub struct Day3 {}
 
-impl<'a> Solver<'a> for Day3 {
-    type Generated = [HashMap<Point, Distance>; 2];
+impl Solver<'_> for Day3 {
+    type Generated = Vec<(Point, Distance)>;
     type Output = Distance;
 
-    fn generator(input: &'a str) -> Self::Generated {
-        trace_wires(
-            input
-                .lines()
-                .map(|l| {
-                    l.split(',')
-                        .map(|x| PathSegment {
-                            direction: x[..1].parse().unwrap(),
-                            distance: x[1..].parse().unwrap(),
-                        })
-                        .collect()
-                })
-                .collect(),
-        )
+    fn generator(input: &str) -> Self::Generated {
+        let paths = input
+            .lines()
+            .map(|l| {
+                l.split(',')
+                    .map(|x| PathSegment {
+                        direction: x[..1].parse().unwrap(),
+                        distance: x[1..].parse().unwrap(),
+                    })
+                    .collect()
+            })
+            .collect();
+        find_intersections(paths)
     }
 
-    fn part1(paths: Self::Generated) -> Self::Output {
-        hashmap_intersection(&paths[0], &paths[1])
-            .map(|c| (c.x.abs() + c.y.abs()) as Distance)
+    fn part1(intersections: Self::Generated) -> Self::Output {
+        intersections
+            .into_iter()
+            .map(|(p, _)| (p.x.abs() + p.y.abs()) as Distance)
             .min()
             .unwrap()
     }
 
-    fn part2(paths: Self::Generated) -> Self::Output {
-        hashmap_intersection(&paths[0], &paths[1])
-            .map(|c| paths[0][c] + paths[1][c])
-            .min()
-            .unwrap()
+    fn part2(intersections: Self::Generated) -> Self::Output {
+        intersections.into_iter().min_by_key(|&(_, s)| s).unwrap().1
     }
 }
 
-fn trace_wires(paths: ArrayVec<[Vec<PathSegment>; 2]>) -> [HashMap<Point, Distance>; 2] {
-    let mut touched_coords_steps: [HashMap<Point, Distance>; 2] =
-        [make_hashmap(&paths[0]), make_hashmap(&paths[1])];
+fn find_intersections<'a>(paths: Vec<Vec<PathSegment>>) -> <Day3 as Solver<'a>>::Generated {
+    assert_eq!(paths.len(), 2);
+    let mut coords_steps =
+        HashMap::with_capacity(paths[0].iter().map(|x| x.distance as usize).sum());
+    trace_wire(&paths[0], |position, steps| {
+        coords_steps.entry(position).or_insert(steps);
+    });
 
-    for path_index in 0..2 {
-        let mut position = Point { x: 0, y: 0 };
-        let mut steps = 0;
-        let coords_steps = &mut touched_coords_steps[path_index];
-        for segment in &paths[path_index] {
-            for _ in 0..segment.distance {
-                position = position.add_dir(segment.direction);
-                steps += 1;
-                coords_steps.entry(position).or_insert(steps);
-            }
+    let mut intersections = Vec::new();
+    trace_wire(&paths[1], |position, steps| {
+        if coords_steps.contains_key(&position) {
+            intersections.push((position, steps + coords_steps[&position]));
+        }
+    });
+
+    intersections
+}
+
+fn trace_wire(path: &[PathSegment], mut step_action: impl FnMut(Point, Distance)) {
+    let mut position = Point { x: 0, y: 0 };
+    let mut steps = 0;
+
+    for segment in path {
+        for _ in 0..segment.distance {
+            position = position.add_dir(segment.direction);
+            steps += 1;
+            step_action(position, steps);
         }
     }
-
-    touched_coords_steps
-}
-
-fn make_hashmap(paths: &[PathSegment]) -> HashMap<Point, Distance> {
-    HashMap::with_capacity(paths.iter().map(|x| x.distance as usize).sum())
-}
-
-fn hashmap_intersection<'a, K: Eq + std::hash::Hash, V>(
-    h1: &'a HashMap<K, V>,
-    h2: &'a HashMap<K, V>,
-) -> impl Iterator<Item = &'a K> {
-    h1.keys().filter(move |x| h2.contains_key(x))
 }
 
 #[cfg(test)]
@@ -86,6 +82,13 @@ mod tests {
 
     #[test]
     fn d3p1() {
+        assert_eq!(
+            Day3::part1(Day3::generator(
+                "R8,U5,L5,D3
+U7,R6,D4,L4"
+            )),
+            6
+        );
         assert_eq!(
             Day3::part1(Day3::generator(
                 "R75,D30,R83,U83,L12,D49,R71,U7,L72
@@ -104,6 +107,13 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
 
     #[test]
     fn d3p2() {
+        assert_eq!(
+            Day3::part2(Day3::generator(
+                "R8,U5,L5,D3
+U7,R6,D4,L4"
+            )),
+            30
+        );
         assert_eq!(
             Day3::part2(Day3::generator(
                 "R75,D30,R83,U83,L12,D49,R71,U7,L72

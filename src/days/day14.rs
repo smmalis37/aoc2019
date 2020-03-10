@@ -3,12 +3,12 @@ use std::collections::{HashMap, VecDeque};
 
 pub struct Day14 {}
 
-type N = u64;
+type Num = u64;
 
 #[derive(Clone, Copy)]
 struct RecipePart<'a> {
     chemical: &'a str,
-    amount: N,
+    amount: Num,
 }
 
 impl<'a> RecipePart<'a> {
@@ -29,7 +29,7 @@ pub struct Recipe<'a> {
 
 impl<'a> Solver<'a> for Day14 {
     type Generated = HashMap<&'a str, Recipe<'a>>;
-    type Output = N;
+    type Output = Num;
 
     fn generator(input: &'a str) -> Self::Generated {
         input
@@ -52,23 +52,29 @@ impl<'a> Solver<'a> for Day14 {
     }
 
     fn part2(recipes: Self::Generated) -> Self::Output {
-        const GOAL_ORE: N = 1_000_000_000_000;
-        let estimate = GOAL_ORE / calculate_ore_count(&recipes, 1);
-        let fuel_range = (estimate..estimate + estimate / 5).collect::<Vec<_>>();
-        let result =
-            fuel_range.binary_search_by(|&x| calculate_ore_count(&recipes, x).cmp(&GOAL_ORE));
+        const GOAL_ORE: Num = 1_000_000_000_000;
 
-        match result {
-            Result::Ok(i) => fuel_range[i],
-            Result::Err(i) => fuel_range[i - 1],
+        let mut fuel_count = 1;
+        let mut ore_used = calculate_ore_count(&recipes, fuel_count);
+
+        while ore_used < GOAL_ORE {
+            fuel_count = ((GOAL_ORE as f64 / ore_used as f64) * fuel_count as f64) as Num + 1;
+            ore_used = calculate_ore_count(&recipes, fuel_count);
         }
+
+        while ore_used > GOAL_ORE {
+            fuel_count -= 1;
+            ore_used = calculate_ore_count(&recipes, fuel_count);
+        }
+
+        fuel_count
     }
 }
 
-fn calculate_ore_count(recipes: &<Day14 as Solver>::Generated, fuel_count: N) -> N {
+fn calculate_ore_count(recipes: &<Day14 as Solver>::Generated, fuel_count: Num) -> Num {
     let mut queue = VecDeque::new();
     let mut ore_count = 0;
-    let mut leftovers = HashMap::<&str, N>::new();
+    let mut leftovers = HashMap::<&str, Num>::new();
     queue.push_back(RecipePart {
         amount: fuel_count,
         chemical: "FUEL",

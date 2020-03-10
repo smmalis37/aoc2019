@@ -8,11 +8,11 @@ pub struct Day15 {}
 
 type N = i32;
 
-impl<'a> Solver<'a> for Day15 {
+impl Solver<'_> for Day15 {
     type Generated = IntCode;
     type Output = N;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         input.parse().unwrap()
     }
 

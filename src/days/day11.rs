@@ -6,11 +6,11 @@ use std::collections::HashMap;
 
 pub struct Day11 {}
 
-impl<'a> Solver<'a> for Day11 {
+impl Solver<'_> for Day11 {
     type Generated = IntCode;
     type Output = usize;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         input.parse().unwrap()
     }
 
@@ -38,10 +38,15 @@ impl<'a> Solver<'a> for Day11 {
             }
         }
 
-        println!();
+        use std::io::Write;
+        let stdout = std::io::stdout();
+        let mut writer = stdout.lock();
+
+        writeln!(writer).unwrap();
         for y in (miny..=maxy).rev() {
             for x in minx..=maxx {
-                print!(
+                write!(
+                    writer,
                     "{}",
                     match grid.get(&Point { x, y }).unwrap_or(&0) {
                         0 => ' ',
@@ -49,8 +54,9 @@ impl<'a> Solver<'a> for Day11 {
                         _ => unreachable!(),
                     },
                 )
+                .unwrap()
             }
-            println!();
+            writeln!(writer).unwrap();
         }
 
         0

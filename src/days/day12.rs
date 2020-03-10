@@ -3,20 +3,20 @@ use std::cmp::Ordering;
 
 pub struct Day12 {}
 
-type N = i64;
+type Num = i64;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Planet {
-    x: N,
-    y: N,
-    z: N,
-    vel_x: N,
-    vel_y: N,
-    vel_z: N,
+    x: Num,
+    y: Num,
+    z: Num,
+    vel_x: Num,
+    vel_y: Num,
+    vel_z: Num,
 }
 
 impl Planet {
-    fn new(x: N, y: N, z: N, vel_x: N, vel_y: N, vel_z: N) -> Self {
+    fn new(x: Num, y: Num, z: Num, vel_x: Num, vel_y: Num, vel_z: Num) -> Self {
         Self {
             x,
             y,
@@ -28,11 +28,11 @@ impl Planet {
     }
 }
 
-impl<'a> Solver<'a> for Day12 {
+impl Solver<'_> for Day12 {
     type Generated = Vec<Planet>;
-    type Output = N;
+    type Output = Num;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         input
             .lines()
             .map(|l| {
@@ -59,33 +59,36 @@ impl<'a> Solver<'a> for Day12 {
 
     fn part2(start_planets: Self::Generated) -> Self::Output {
         let mut planets = start_planets.clone();
-        let mut cycles = vec![0; 3];
+        let mut cycles = vec![None; 3];
         let mut steps = 0;
 
-        while cycles.iter().any(|&x| x == 0) {
+        while cycles.iter().any(|&x| x.is_none()) {
             run_step(&mut planets);
             steps += 1;
 
-            if cycles[0] == 0 && check_axis(&planets, &start_planets, |p| p.x, |p| p.vel_x) {
-                cycles[0] = steps;
+            if cycles[0].is_none() && check_axis(&planets, &start_planets, |p| p.x, |p| p.vel_x) {
+                cycles[0] = Some(steps);
             }
-            if cycles[1] == 0 && check_axis(&planets, &start_planets, |p| p.y, |p| p.vel_y) {
-                cycles[1] = steps;
+            if cycles[1].is_none() && check_axis(&planets, &start_planets, |p| p.y, |p| p.vel_y) {
+                cycles[1] = Some(steps);
             }
-            if cycles[2] == 0 && check_axis(&planets, &start_planets, |p| p.z, |p| p.vel_z) {
-                cycles[2] = steps;
+            if cycles[2].is_none() && check_axis(&planets, &start_planets, |p| p.z, |p| p.vel_z) {
+                cycles[2] = Some(steps);
             }
         }
 
-        cycles.into_iter().fold(1, num_integer::lcm)
+        cycles
+            .into_iter()
+            .map(|x| x.unwrap())
+            .fold(1, num_integer::lcm)
     }
 }
 
 fn check_axis(
     planets: &[Planet],
     start_planets: &[Planet],
-    position: impl Fn(&Planet) -> N,
-    velocity: impl Fn(&Planet) -> N,
+    position: impl Fn(&Planet) -> Num,
+    velocity: impl Fn(&Planet) -> Num,
 ) -> bool {
     planets
         .iter()
@@ -109,7 +112,7 @@ fn run_step(planets: &mut <Day12 as Solver>::Generated) {
     }
 }
 
-fn gravity_adjust(pos1: N, vel1: &mut N, pos2: N, vel2: &mut N) {
+fn gravity_adjust(pos1: Num, vel1: &mut Num, pos2: Num, vel2: &mut Num) {
     let factor = match pos1.cmp(&pos2) {
         Ordering::Less => 1,
         Ordering::Equal => 0,
@@ -126,7 +129,7 @@ fn velocity_adjust(planet: &mut Planet) {
     planet.z += planet.vel_z;
 }
 
-fn energy(p: &Planet) -> N {
+fn energy(p: &Planet) -> Num {
     let pos_energy = p.x.abs() + p.y.abs() + p.z.abs();
     let kin_energy = p.vel_x.abs() + p.vel_y.abs() + p.vel_z.abs();
     pos_energy * kin_energy
@@ -265,7 +268,7 @@ mod tests {
             ]
         );
 
-        assert_eq!(planets.iter().map(energy).sum::<N>(), 179);
+        assert_eq!(planets.iter().map(energy).sum::<Num>(), 179);
     }
 
     #[test]
@@ -417,7 +420,7 @@ mod tests {
             ]
         );
 
-        assert_eq!(planets.iter().map(energy).sum::<N>(), 1940);
+        assert_eq!(planets.iter().map(energy).sum::<Num>(), 1940);
     }
 
     #[test]

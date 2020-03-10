@@ -6,11 +6,11 @@ use std::cmp::max;
 
 pub struct Day7 {}
 
-impl<'a> Solver<'a> for Day7 {
+impl Solver<'_> for Day7 {
     type Generated = IntCode;
     type Output = IntCodeCell;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         input.parse().unwrap()
     }
 

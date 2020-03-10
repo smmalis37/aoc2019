@@ -4,16 +4,16 @@ pub struct Day1 {}
 
 type Mass = u32;
 
-impl<'a> Solver<'a> for Day1 {
+impl Solver<'_> for Day1 {
     type Generated = Vec<Mass>;
     type Output = Mass;
 
-    fn generator(input: &'a str) -> Self::Generated {
+    fn generator(input: &str) -> Self::Generated {
         input.lines().map(|l| l.parse().unwrap()).collect()
     }
 
     fn part1(masses: Self::Generated) -> Self::Output {
-        masses.iter().map(|&x| calculate_fuel(x)).sum()
+        masses.into_iter().map(calculate_fuel).sum()
     }
 
     fn part2(masses: Self::Generated) -> Self::Output {
@@ -40,18 +40,28 @@ fn calculate_fuel(mass: Mass) -> Mass {
 mod tests {
     use super::*;
 
+    fn test<'a>(
+        part: impl Fn(<Day1 as Solver<'a>>::Generated) -> <Day1 as Solver<'a>>::Output,
+        input: Mass,
+        expected_output: <Day1 as Solver>::Output,
+    ) {
+        assert_eq!(part(vec![input]), expected_output);
+    }
+
     #[test]
     fn d1p1() {
-        assert_eq!(Day1::part1(vec![12]), 2);
-        assert_eq!(Day1::part1(vec![14]), 2);
-        assert_eq!(Day1::part1(vec![1969]), 654);
-        assert_eq!(Day1::part1(vec![100_756]), 33583);
+        let test_part1 = |x, y| test(Day1::part1, x, y);
+        test_part1(12, 2);
+        test_part1(14, 2);
+        test_part1(1969, 654);
+        test_part1(100_756, 33583);
     }
 
     #[test]
     fn d1p2() {
-        assert_eq!(Day1::part2(vec![14]), 2);
-        assert_eq!(Day1::part2(vec![1969]), 966);
-        assert_eq!(Day1::part2(vec![100_756]), 50346);
+        let test_part2 = |x, y| test(Day1::part2, x, y);
+        test_part2(14, 2);
+        test_part2(1969, 966);
+        test_part2(100_756, 50346);
     }
 }
