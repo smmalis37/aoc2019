@@ -40,7 +40,7 @@ fn run_bot(intcode: IntCode) -> (N, N) {
     let mut data = HashMap::new();
     data.insert(position, (all_directions.clone(), Up));
 
-    intcode.run_demand_driven(
+    intcode.run_with_fns(
         (data, position, origin, distance, last_direction),
         |(data, position, origin, distance, last_direction), o| match o {
             0 => (),

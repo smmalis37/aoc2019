@@ -12,13 +12,13 @@ impl Solver<'_> for Day9 {
     }
 
     fn part1(intcode: Self::Generated) -> Self::Output {
-        let outputs = intcode.run_predetermined(&[1]);
+        let outputs = intcode.run_with_input(&[1]);
         assert!(outputs.len() == 1);
         outputs[0]
     }
 
     fn part2(intcode: Self::Generated) -> Self::Output {
-        intcode.run_predetermined(&[2])[0]
+        intcode.run_with_input(&[2])[0]
     }
 }
 
@@ -27,7 +27,7 @@ mod tests {
     use super::*;
 
     fn test(program: &str, expected_output: &[IntCodeCell]) {
-        let outputs = program.parse::<IntCode>().unwrap().run_predetermined(&[]);
+        let outputs = program.parse::<IntCode>().unwrap().run_with_input(&[]);
         assert_eq!(outputs, expected_output);
     }
 

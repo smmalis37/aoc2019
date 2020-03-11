@@ -23,7 +23,7 @@ impl Solver<'_> for Day7 {
 
             for phase in settings.iter() {
                 let intcode = start_intcode.clone();
-                let output = intcode.run_predetermined(&[*phase, signal]);
+                let output = intcode.run_with_input(&[*phase, signal]);
                 signal = output[0];
             }
 
@@ -65,7 +65,7 @@ impl Solver<'_> for Day7 {
                 };
 
                 threads.spawn(move || {
-                    intcode.run_multi_threaded(input_recv, output_send);
+                    intcode.run_with_channels(input_recv, output_send);
                     wg.wait();
                 });
             }

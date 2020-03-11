@@ -71,7 +71,7 @@ fn run_bot(intcode: IntCode, start_value: IntCodeCell) -> HashMap<Point, IntCode
 
     grid.insert(position, start_value);
 
-    intcode.run_demand_driven(
+    intcode.run_with_fns(
         (&mut grid, position),
         |(grid, position), o| {
             if let Some(pos) = previous_output {

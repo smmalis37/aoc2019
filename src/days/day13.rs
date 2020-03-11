@@ -13,7 +13,7 @@ impl Solver<'_> for Day13 {
     }
 
     fn part1(intcode: Self::Generated) -> Self::Output {
-        let outputs = intcode.run_predetermined(&[]);
+        let outputs = intcode.run_with_input(&[]);
         outputs.chunks(3).filter(|&x| x[2] == 2).count() as IntCodeCell
     }
 
@@ -22,7 +22,7 @@ impl Solver<'_> for Day13 {
         let mut score = 0;
         let mut previous_outputs = [None, None];
 
-        intcode.run_demand_driven(
+        intcode.run_with_fns(
             (0, 0),
             |(paddle_x, ball_x), o| {
                 if let Some(x) = previous_outputs[0] {

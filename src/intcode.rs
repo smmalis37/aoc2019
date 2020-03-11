@@ -39,7 +39,7 @@ impl IntCode {
     }
 
     #[must_use]
-    pub(crate) fn run_predetermined(mut self, input: &[IntCodeCell]) -> Vec<IntCodeCell> {
+    pub(crate) fn run_with_input(mut self, input: &[IntCodeCell]) -> Vec<IntCodeCell> {
         let mut inputs = input.iter();
         let mut outputs = Vec::new();
 
@@ -47,7 +47,7 @@ impl IntCode {
         outputs
     }
 
-    pub(crate) fn run_demand_driven<SharedState>(
+    pub(crate) fn run_with_fns<SharedState>(
         mut self,
         shared_state: SharedState,
         output: impl FnMut(&mut SharedState, IntCodeCell),
@@ -56,7 +56,7 @@ impl IntCode {
         self.run(shared_state, input, output)
     }
 
-    pub(crate) fn run_multi_threaded(
+    pub(crate) fn run_with_channels(
         mut self,
         input: Receiver<IntCodeCell>,
         output: Sender<IntCodeCell>,

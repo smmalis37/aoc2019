@@ -29,7 +29,7 @@ impl Solver<'_> for Day17 {
     fn generator(input: &str) -> Self::Generated {
         let intcode = input.parse::<IntCode>().unwrap();
 
-        let mut outputs = intcode.clone().run_predetermined(&[]);
+        let mut outputs = intcode.clone().run_with_input(&[]);
         outputs.truncate(outputs.len() - 1);
         let (grid, robot_pos) = parse_grid(outputs.iter().map(|&x| x as u8 as char));
 
@@ -51,7 +51,7 @@ impl Solver<'_> for Day17 {
             .collect::<Vec<_>>();
 
         intcode.replace_cell(0, 2);
-        let outputs = intcode.run_predetermined(&input);
+        let outputs = intcode.run_with_input(&input);
         *outputs.last().unwrap() as usize
     }
 }
