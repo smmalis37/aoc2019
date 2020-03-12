@@ -37,14 +37,14 @@ impl Solver<'_> for Day12 {
             .lines()
             .map(|l| {
                 let mut sections = l.trim_matches(&['<', '>'][..]).split(&[',', '='][..]);
-                (Planet::new(
+                Planet::new(
                     sections.nth(1).unwrap().parse().unwrap(),
                     sections.nth(1).unwrap().parse().unwrap(),
                     sections.nth(1).unwrap().parse().unwrap(),
                     0,
                     0,
                     0,
-                ))
+                )
             })
             .collect()
     }
