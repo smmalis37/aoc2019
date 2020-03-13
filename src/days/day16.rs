@@ -41,27 +41,53 @@ impl Solver<'_> for Day16 {
 }
 
 fn run_phase<'a>(input: <Day16 as Solver>::Generated) -> <Day16 as Solver<'a>>::Generated {
-    let pattern = [0, 1, 0, -1];
+    let mut output = Vec::with_capacity(input.len());
+    let input = ISizeVec(input);
+    let input_len = input.len();
 
-    (0..input.len())
-        .map(|i| {
-            (input
-                .iter()
-                .skip(i)
-                .zip(
-                    pattern
-                        .iter()
-                        .flat_map(|&x| std::iter::repeat(x).take(i + 1))
-                        .cycle()
-                        .skip(1)
-                        .skip(i),
-                )
-                .map(|(x, y)| x * y)
-                .sum::<Num>()
-                % 10)
-                .abs()
-        })
-        .collect()
+    for output_index in 0..input_len {
+        let mut value: Num = 0;
+        let mut index = -1;
+        let pattern_length = output_index + 1;
+
+        while index < input_len {
+            use std::cmp::min;
+            // 0
+            index = min(index + pattern_length, input_len);
+
+            // 1
+            let end_index = min(index + pattern_length, input_len);
+            value += input[index..end_index].iter().sum::<Num>();
+            index = min(index + pattern_length, input_len);
+
+            // 0
+            index = min(index + pattern_length, input_len);
+
+            // -1
+            let end_index = min(index + pattern_length, input_len);
+            value -= input[index..end_index].iter().sum::<Num>();
+            index = min(index + pattern_length, input_len);
+        }
+
+        output.push(value.abs() % 10);
+    }
+
+    output
+}
+
+struct ISizeVec<T>(Vec<T>);
+
+impl<T> std::ops::Index<std::ops::Range<isize>> for ISizeVec<T> {
+    type Output = [T];
+    fn index(&self, index: std::ops::Range<isize>) -> &Self::Output {
+        self.0.index(index.start as usize..index.end as usize)
+    }
+}
+
+impl<T> ISizeVec<T> {
+    fn len(&self) -> isize {
+        self.0.len() as isize
+    }
 }
 
 fn to_number<'a>(x: impl IntoIterator<Item = &'a Num>) -> Num {
