@@ -80,7 +80,7 @@ impl Solver<'_> for Day12 {
         cycles
             .into_iter()
             .map(|x| x.unwrap())
-            .fold(1, num_integer::lcm)
+            .fold(1, num::integer::lcm)
     }
 }
 

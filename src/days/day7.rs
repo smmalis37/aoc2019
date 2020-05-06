@@ -21,7 +21,7 @@ impl Solver<'_> for Day7 {
         for settings in Heap::new(&mut phases) {
             let mut signal = 0;
 
-            for phase in settings.iter() {
+            for phase in &settings {
                 let intcode = start_intcode.clone();
                 let output = intcode.run_with_input(&[*phase, signal]);
                 signal = output[0];

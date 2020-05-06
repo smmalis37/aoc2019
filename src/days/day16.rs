@@ -2,7 +2,7 @@ use crate::solver::Solver;
 
 pub struct Day16 {}
 
-type Num = i32;
+type Num = u32;
 
 impl Solver<'_> for Day16 {
     type Generated = Vec<Num>;
@@ -46,7 +46,7 @@ fn run_phase<'a>(input: <Day16 as Solver>::Generated) -> <Day16 as Solver<'a>>::
     let input_len = input.len();
 
     for output_index in 0..input_len {
-        let mut value: Num = 0;
+        let mut value: i32 = 0;
         let mut index = -1;
         let pattern_length = output_index + 1;
 
@@ -57,7 +57,7 @@ fn run_phase<'a>(input: <Day16 as Solver>::Generated) -> <Day16 as Solver<'a>>::
 
             // 1
             let end_index = min(index + pattern_length, input_len);
-            value += input[index..end_index].iter().sum::<Num>();
+            value += input[index..end_index].iter().sum::<Num>() as i32;
             index = min(index + pattern_length, input_len);
 
             // 0
@@ -65,11 +65,11 @@ fn run_phase<'a>(input: <Day16 as Solver>::Generated) -> <Day16 as Solver<'a>>::
 
             // -1
             let end_index = min(index + pattern_length, input_len);
-            value -= input[index..end_index].iter().sum::<Num>();
+            value -= input[index..end_index].iter().sum::<Num>() as i32;
             index = min(index + pattern_length, input_len);
         }
 
-        output.push(value.abs() % 10);
+        output.push((value.abs() % 10) as Num);
     }
 
     output
